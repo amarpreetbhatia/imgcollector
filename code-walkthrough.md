@@ -2,11 +2,12 @@
 
 ## Architecture Overview
 
-This is a full-stack React + Node.js application that crawls websites to extract and display images. The application follows a client-server architecture with clear separation of concerns.
+This is a full-stack React + Node.js application that crawls websites to extract and display images with secure bulk download capabilities. The application follows a client-server architecture with service worker isolation for downloads.
 
 ### Tech Stack
 - **Frontend**: React 18 + TypeScript + Material-UI + Vite
 - **Backend**: Node.js + Express + Cheerio + Axios
+- **Download System**: Service Worker + JSZip + Security Validation
 - **Testing**: Vitest + React Testing Library
 
 ## Project Structure
@@ -14,13 +15,20 @@ This is a full-stack React + Node.js application that crawls websites to extract
 ```
 ├── src/                    # React frontend
 │   ├── components/         # React components
+│   │   ├── ImageCarousel.tsx    # Enhanced with download functionality
+│   │   └── WelcomeScreen.tsx    # URL input component
 │   ├── utils/             # Utility functions
+│   │   ├── crawler.ts          # Backend API communication
+│   │   ├── downloadService.ts  # Download service with worker management
+│   │   └── securityConfig.ts   # Security configuration and validation
 │   ├── styles/            # CSS styles
 │   ├── test/              # Test files
-│   └── types.ts           # TypeScript interfaces
+│   └── types.ts           # TypeScript interfaces with download types
 ├── server/                # Node.js backend
-│   └── server.js          # Express server
+│   └── server.js          # Express server with crawling logic
 └── public/                # Static assets
+    ├── download-worker.js      # Service worker for secure downloads
+    └── index.html             # Main HTML template
 ```
 
 ## Data Flow Architecture
@@ -62,6 +70,14 @@ App → WelcomeScreen (initial) → ImageCarousel (after crawl)
 - Full-screen image dialog with source attribution
 - Responsive design with mobile-first approach
 - External link handling with security attributes
+- **Secure Bulk Download**: Integrated download functionality with progress tracking
+
+**Download Integration:**
+- Smart button states (Download All/Cancel based on state)
+- Real-time progress tracking with LinearProgress component
+- Error handling with Snackbar notifications
+- Success feedback and automatic cleanup
+- Download cancellation support
 
 **Responsive Breakpoints:**
 ```javascript
@@ -118,6 +134,61 @@ if (foundImages.has(url)) skip;
 3. **Parsing Errors**: Invalid JSON responses
 4. **Timeout Errors**: Request timeouts
 
+## Download Architecture
+
+### Service Worker (`public/download-worker.js`)
+
+**Core Components:**
+- **SecureImageDownloader**: Main download orchestration class
+- **Semaphore**: Concurrent download control (max 3 simultaneous)
+- **Security Validation**: Multi-layer input and content validation
+
+**Download Algorithm:**
+1. **Input Validation**: URL format, array structure, count limits
+2. **Batch Processing**: Process images with concurrency control
+3. **Individual Download**: Fetch with timeout, MIME validation, size checks
+4. **ZIP Creation**: JSZip with metadata file generation
+5. **Blob Delivery**: Return ZIP blob to main thread
+
+**Security Measures:**
+- File size limits (50MB per image, 500MB total)
+- MIME type whitelist (image formats only)
+- URL protocol validation (HTTP/HTTPS only)
+- Timeout protection (30 seconds per image)
+- Filename sanitization and collision prevention
+
+### Download Service (`src/utils/downloadService.ts`)
+
+**Responsibilities:**
+- Service worker lifecycle management
+- Message passing and request ID tracking
+- Progress callback handling
+- Automatic blob URL cleanup
+- Error propagation and user feedback
+
+**Communication Pattern:**
+```javascript
+Main Thread ←→ Service Worker
+    ↓              ↓
+DownloadService ←→ SecureImageDownloader
+    ↓              ↓
+UI Updates    ←→  Progress Events
+```
+
+### Security Configuration (`src/utils/securityConfig.ts`)
+
+**Centralized Security:**
+- **SECURITY_CONFIG**: All security constants and limits
+- **SecurityValidator**: Input validation utility functions
+- **SecurityAudit**: Logging and monitoring for security events
+
+**Validation Pipeline:**
+1. URL protocol and format validation
+2. MIME type whitelist checking
+3. File size and count limit enforcement
+4. Filename sanitization
+5. Total download size tracking
+
 ## Type System (`src/types.ts`)
 
 **Core Interfaces:**
@@ -131,6 +202,21 @@ ImageData: {
 CrawlResult: {
   images: ImageData[];
   error?: string;     // Error message if crawl failed
+}
+
+DownloadProgress: {
+  current: number;    // Current download count
+  total: number;      // Total images to download
+  percentage: number; // Completion percentage
+  message: string;    // Status message for UI
+}
+
+DownloadResult: {
+  success: boolean;
+  zipBlob?: Blob;     // Generated ZIP file
+  downloadedCount?: number;
+  totalCount?: number;
+  error?: string;
 }
 ```
 
@@ -161,6 +247,50 @@ shouldStop() {
 5. **Content Filtering**: Skip tracking pixels and analytics images
 6. **Alt Text Extraction**: Capture accessibility information
 
+### Download Security Algorithm
+```javascript
+downloadSingleImage(image) {
+  // 1. URL validation
+  if (!isValidImageUrl(image.url)) throw error;
+  
+  // 2. Size limit check
+  if (totalDownloaded > MAX_TOTAL_SIZE) throw error;
+  
+  // 3. Fetch with timeout
+  const response = await fetch(url, { 
+    signal: abortController.signal,
+    timeout: 30000 
+  });
+  
+  // 4. MIME type validation
+  if (!isValidMimeType(contentType)) throw error;
+  
+  // 5. File size validation
+  if (fileSize > MAX_FILE_SIZE) throw error;
+  
+  // 6. Safe filename generation
+  const filename = generateSafeFilename(url, index, contentType);
+  
+  return { filename, data, metadata };
+}
+```
+
+### Concurrency Control (Semaphore Pattern)
+```javascript
+class Semaphore {
+  constructor(maxConcurrency) {
+    this.maxConcurrency = maxConcurrency;  // 3 for downloads
+    this.currentConcurrency = 0;
+    this.queue = [];
+  }
+  
+  async acquire(task) {
+    // Queue task if at capacity, otherwise execute immediately
+    // Automatically releases slot when task completes
+  }
+}
+```
+
 ### Responsive Design Strategy
 - **Mobile-First**: Base styles for mobile, progressive enhancement
 - **Breakpoint System**: Material-UI's standard breakpoints (xs, sm, md, lg, xl)
@@ -174,6 +304,7 @@ shouldStop() {
 - **Error Boundaries**: Graceful handling of image load failures
 - **Memoization**: React component optimization opportunities
 - **Bundle Splitting**: Vite's automatic code splitting
+- **Service Worker**: Background processing doesn't block UI
 
 ### Backend
 - **Concurrent Requests**: Axios with connection pooling
@@ -181,10 +312,18 @@ shouldStop() {
 - **Memory Management**: Set-based duplicate detection
 - **Early Termination**: Stop conditions prevent resource exhaustion
 
+### Download Performance
+- **Concurrent Downloads**: Semaphore-controlled (max 3 simultaneous)
+- **Streaming**: Large files processed without full memory load
+- **Compression**: ZIP files use DEFLATE compression (level 6)
+- **Progress Batching**: UI updates batched to prevent excessive re-renders
+- **Automatic Cleanup**: Blob URLs and resources cleaned up immediately
+
 ### Caching Strategy
 - **URL Deduplication**: Set-based visited URL tracking
 - **Image Deduplication**: Set-based found image URL tracking
 - **No Persistent Cache**: Fresh crawl on each request
+- **Worker Reuse**: Single service worker instance for all downloads
 
 ## Security Considerations
 
@@ -199,6 +338,31 @@ shouldStop() {
 - **External Links**: Open with noopener,noreferrer attributes
 - **XSS Prevention**: Material-UI's built-in sanitization
 - **CORS Configuration**: Proper cross-origin request handling
+
+### Download Security Architecture
+
+**Multi-Layer Protection:**
+1. **Input Validation**: URL format, protocol, array structure
+2. **Resource Limits**: File size (50MB), total size (500MB), count (100)
+3. **Content Validation**: MIME type whitelist, header verification
+4. **Request Security**: CORS mode, no credentials, timeout protection
+5. **Isolation**: Service worker execution context separation
+
+**Security Boundaries:**
+```
+Main Thread (UI) ←→ Service Worker (Downloads)
+     ↑                      ↑
+Restricted Access    Full Network Access
+User Interaction     Background Processing
+DOM Manipulation     File System Access
+```
+
+**Threat Mitigation:**
+- **Large File Attacks**: Size limits and streaming
+- **Malicious Content**: MIME type validation
+- **Memory Exhaustion**: Concurrent limits and cleanup
+- **Infinite Loops**: Timeout and count limits
+- **Cross-Origin Attacks**: Isolated worker context
 
 ## Testing Strategy (`vite.config.ts`)
 
@@ -229,4 +393,45 @@ npm run dev  # Runs both frontend and backend simultaneously
 ### Build Process
 - **Frontend**: Vite build system with TypeScript compilation
 - **Backend**: No build step required (Node.js runtime)
+- **Service Worker**: Served as static asset from public directory
 - **Testing**: Vitest with coverage reporting
+
+## Data Flow Patterns
+
+### Complete Application Flow
+```
+1. User Input (URL) → WelcomeScreen
+2. Validation → API Call → Backend Crawler
+3. HTML Parsing → Image Extraction → Response
+4. Image Display → ImageCarousel (Grid/Carousel)
+5. Download Request → DownloadService → Service Worker
+6. Parallel Downloads → ZIP Creation → File Download
+7. Progress Updates → UI Feedback → Completion
+```
+
+### Service Worker Communication
+```
+ImageCarousel → DownloadService → Service Worker
+     ↓               ↓               ↓
+Button Click → postMessage → downloadImages()
+     ↓               ↓               ↓
+Progress UI ← onProgress ← DOWNLOAD_PROGRESS
+     ↓               ↓               ↓
+Success UI  ← Promise  ← DOWNLOAD_COMPLETE
+```
+
+### Error Propagation Chain
+```
+Service Worker Error → DownloadService → ImageCarousel → Snackbar
+Network Error → Fetch Failure → Error Message → User Notification
+Validation Error → Early Rejection → Error State → UI Feedback
+```
+
+## Component Lifecycle Management
+
+### Download State Management
+- **Initialization**: Service worker registration and setup
+- **Active Download**: Progress tracking and cancellation support  
+- **Completion**: Resource cleanup and success notification
+- **Error Handling**: Graceful degradation and user feedback
+- **Cleanup**: Component unmount cleanup and worker termination

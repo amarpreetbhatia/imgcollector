@@ -32,3 +32,16 @@ root.render(
     </ThemeProvider>
   </React.StrictMode>
 );
+
+// Register service worker for download functionality
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/download-worker.js')
+      .then((registration) => {
+        console.log('Download worker registered successfully:', registration.scope);
+      })
+      .catch((error) => {
+        console.log('Download worker registration failed:', error);
+      });
+  });
+}

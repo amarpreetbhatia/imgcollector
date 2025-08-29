@@ -68,8 +68,10 @@ npm run test -- --coverage
 
 - **Client-Server Pattern**: Frontend (port 3000) + Backend (port 3001)
 - **CORS Bypass**: Backend handles web crawling to avoid browser CORS restrictions
+- **Service Worker**: Background download processing with security isolation
 - **Responsive Design**: Mobile-first approach with Material-UI breakpoints
 - **Error Boundaries**: Comprehensive error handling at component and network levels
+- **Security-First**: Multi-layer security for download feature with resource limits
 
 ## Configuration Files
 

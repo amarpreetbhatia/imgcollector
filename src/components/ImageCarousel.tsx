@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -13,16 +13,21 @@ import {
   Tooltip,
   useTheme,
   useMediaQuery,
+  LinearProgress,
+  Alert,
+  Snackbar,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
   OpenInNew as OpenInNewIcon,
   Close as CloseIcon,
+  Download as DownloadIcon,
 } from '@mui/icons-material';
 import Carousel from 'react-multi-carousel';
 import 'react-multi-carousel/lib/styles.css';
 import '../styles/carousel-custom.css';
 import { ImageData } from '../types';
+import { downloadService, DownloadProgress } from '../utils/downloadService';
 
 interface ImageCarouselProps {
   images: ImageData[];
@@ -33,6 +38,10 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
   const [selectedImage, setSelectedImage] = useState<ImageData | null>(null);
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
   const [viewMode, setViewMode] = useState<'grid' | 'carousel'>('carousel');
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState<DownloadProgress | null>(null);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
+  const [downloadSuccess, setDownloadSuccess] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -73,6 +82,59 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
 
   const validImages = images.filter(img => !imageErrors.has(img.url));
 
+  // Download functionality
+  const handleDownload = async () => {
+    if (isDownloading || validImages.length === 0) {
+      return;
+    }
+
+    try {
+      setIsDownloading(true);
+      setDownloadError(null);
+      setDownloadProgress(null);
+
+      await downloadService.downloadImages(validImages, (progress) => {
+        setDownloadProgress(progress);
+      });
+
+      setDownloadSuccess(true);
+      setDownloadProgress(null);
+    } catch (error) {
+      console.error('Download failed:', error);
+      setDownloadError(error instanceof Error ? error.message : 'Download failed');
+      setDownloadProgress(null);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const handleCancelDownload = () => {
+    if (isDownloading) {
+      downloadService.cancelDownload();
+      setIsDownloading(false);
+      setDownloadProgress(null);
+    }
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (isDownloading) {
+        downloadService.cancelDownload();
+      }
+    };
+  }, [isDownloading]);
+
+  // Close success message
+  const handleCloseSuccess = () => {
+    setDownloadSuccess(false);
+  };
+
+  // Close error message
+  const handleCloseError = () => {
+    setDownloadError(null);
+  };
+
   return (
     <Box>
       {/* Header */}
@@ -102,31 +164,69 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
           </Box>
         </Box>
 
-        <Box display="flex" gap={1} flexDirection={isMobile ? "row" : "row"}>
-          <Button
-            variant={viewMode === 'grid' ? 'contained' : 'outlined'}
-            size={isMobile ? "small" : "medium"}
-            onClick={() => setViewMode('grid')}
-          >
-            Grid
-          </Button>
-          <Button
-            variant={viewMode === 'carousel' ? 'contained' : 'outlined'}
-            size={isMobile ? "small" : "medium"}
-            onClick={() => setViewMode('carousel')}
-          >
-            Carousel
-          </Button>
-          <Button
-            variant="outlined"
-            startIcon={<ArrowBackIcon />}
-            onClick={onBack}
-            size={isMobile ? "small" : "medium"}
-          >
-            {isMobile ? 'Back' : 'Back to Search'}
-          </Button>
+        <Box display="flex" gap={1} flexDirection={isMobile ? "column" : "row"} alignItems={isMobile ? "stretch" : "center"}>
+          <Box display="flex" gap={1}>
+            <Button
+              variant={viewMode === 'grid' ? 'contained' : 'outlined'}
+              size={isMobile ? "small" : "medium"}
+              onClick={() => setViewMode('grid')}
+              disabled={isDownloading}
+            >
+              Grid
+            </Button>
+            <Button
+              variant={viewMode === 'carousel' ? 'contained' : 'outlined'}
+              size={isMobile ? "small" : "medium"}
+              onClick={() => setViewMode('carousel')}
+              disabled={isDownloading}
+            >
+              Carousel
+            </Button>
+          </Box>
+          
+          <Box display="flex" gap={1}>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<DownloadIcon />}
+              onClick={isDownloading ? handleCancelDownload : handleDownload}
+              disabled={validImages.length === 0}
+              size={isMobile ? "small" : "medium"}
+            >
+              {isDownloading ? 'Cancel' : `Download All (${validImages.length})`}
+            </Button>
+            
+            <Button
+              variant="outlined"
+              startIcon={<ArrowBackIcon />}
+              onClick={onBack}
+              disabled={isDownloading}
+              size={isMobile ? "small" : "medium"}
+            >
+              {isMobile ? 'Back' : 'Back to Search'}
+            </Button>
+          </Box>
         </Box>
       </Box>
+
+      {/* Download Progress */}
+      {isDownloading && downloadProgress && (
+        <Box mb={3}>
+          <Alert severity="info" sx={{ mb: 2 }}>
+            <Typography variant="body2" gutterBottom>
+              {downloadProgress.message}
+            </Typography>
+            <LinearProgress 
+              variant="determinate" 
+              value={downloadProgress.percentage} 
+              sx={{ mt: 1 }}
+            />
+            <Typography variant="caption" sx={{ mt: 1, display: 'block' }}>
+              {downloadProgress.current} of {downloadProgress.total} images ({downloadProgress.percentage}%)
+            </Typography>
+          </Alert>
+        </Box>
+      )}
 
       {/* Images Carousel */}
       {validImages.length === 0 ? (
@@ -345,6 +445,30 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Success Snackbar */}
+      <Snackbar
+        open={downloadSuccess}
+        autoHideDuration={6000}
+        onClose={handleCloseSuccess}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseSuccess} severity="success" sx={{ width: '100%' }}>
+          Images downloaded successfully! Check your downloads folder.
+        </Alert>
+      </Snackbar>
+
+      {/* Error Snackbar */}
+      <Snackbar
+        open={!!downloadError}
+        autoHideDuration={8000}
+        onClose={handleCloseError}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseError} severity="error" sx={{ width: '100%' }}>
+          Download failed: {downloadError}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

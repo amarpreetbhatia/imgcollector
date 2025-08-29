@@ -21,7 +21,9 @@ src/
 │   ├── ImageCarousel.tsx   # Main image display component
 │   └── WelcomeScreen.tsx   # URL input and crawl initiation
 ├── utils/                  # Utility functions and API clients
-│   └── crawler.ts          # Backend API communication
+│   ├── crawler.ts          # Backend API communication
+│   ├── downloadService.ts  # Secure download service with worker management
+│   └── securityConfig.ts   # Security configuration and validation
 ├── styles/                 # Custom CSS styles
 │   └── carousel-custom.css # Carousel-specific styling
 ├── test/                   # Test files and test utilities
