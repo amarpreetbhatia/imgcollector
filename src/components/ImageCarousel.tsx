@@ -1,0 +1,361 @@
+import React, { useState } from 'react';
+import {
+  Box,
+  Typography,
+  Button,
+  Card,
+  CardMedia,
+  Grid,
+  Chip,
+  IconButton,
+  Dialog,
+  DialogContent,
+  Tooltip,
+  useTheme,
+  useMediaQuery,
+} from '@mui/material';
+import {
+  ArrowBack as ArrowBackIcon,
+  OpenInNew as OpenInNewIcon,
+  Close as CloseIcon,
+} from '@mui/icons-material';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination, Autoplay, Grid as SwiperGrid } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+import 'swiper/css/grid';
+import '../styles/swiper-custom.css';
+import { ImageData } from '../types';
+
+interface ImageCarouselProps {
+  images: ImageData[];
+  onBack: () => void;
+}
+
+const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
+  const [selectedImage, setSelectedImage] = useState<ImageData | null>(null);
+  const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
+  const [viewMode, setViewMode] = useState<'grid' | 'carousel'>('carousel');
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+
+  const handleImageError = (imageUrl: string) => {
+    setImageErrors(prev => new Set(prev).add(imageUrl));
+  };
+
+  const handleImageClick = (image: ImageData) => {
+    setSelectedImage(image);
+  };
+
+  const handleCloseDialog = () => {
+    setSelectedImage(null);
+  };
+
+  const handleOpenSource = (sourceUrl: string) => {
+    window.open(sourceUrl, '_blank', 'noopener,noreferrer');
+  };
+
+  const validImages = images.filter(img => !imageErrors.has(img.url));
+
+  return (
+    <Box>
+      {/* Header */}
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems={isMobile ? "flex-start" : "center"}
+        mb={3}
+        flexDirection={isMobile ? "column" : "row"}
+        gap={2}
+      >
+        <Box>
+          <Typography 
+            variant={isMobile ? "h5" : "h4"} 
+            component="h1" 
+            gutterBottom
+          >
+            Found Images
+          </Typography>
+          <Box display="flex" gap={1} flexWrap="wrap">
+            <Chip
+              label={`${validImages.length} images found`}
+              color="primary"
+              variant="outlined"
+              size={isMobile ? "small" : "medium"}
+            />
+          </Box>
+        </Box>
+        
+        <Box display="flex" gap={1} flexDirection={isMobile ? "row" : "row"}>
+          <Button
+            variant={viewMode === 'grid' ? 'contained' : 'outlined'}
+            size={isMobile ? "small" : "medium"}
+            onClick={() => setViewMode('grid')}
+          >
+            Grid
+          </Button>
+          <Button
+            variant={viewMode === 'carousel' ? 'contained' : 'outlined'}
+            size={isMobile ? "small" : "medium"}
+            onClick={() => setViewMode('carousel')}
+          >
+            Carousel
+          </Button>
+          <Button
+            variant="outlined"
+            startIcon={<ArrowBackIcon />}
+            onClick={onBack}
+            size={isMobile ? "small" : "medium"}
+          >
+            {isMobile ? 'Back' : 'Back to Search'}
+          </Button>
+        </Box>
+      </Box>
+
+      {/* Images Carousel */}
+      {validImages.length === 0 ? (
+        <Box textAlign="center" py={8}>
+          <Typography variant="h6" color="text.secondary">
+            No valid images could be loaded
+          </Typography>
+          <Button
+            variant="contained"
+            onClick={onBack}
+            sx={{ mt: 2 }}
+          >
+            Try Another URL
+          </Button>
+        </Box>
+      ) : viewMode === 'carousel' ? (
+        <Box sx={{ mb: 4 }}>
+          <Swiper
+            modules={[Navigation, Pagination, Autoplay, SwiperGrid]}
+            spaceBetween={isMobile ? 10 : 20}
+            slidesPerView={isMobile ? 1 : isTablet ? 2 : 4}
+            grid={{
+              rows: isMobile ? 1 : 2,
+              fill: 'row',
+            }}
+            navigation={!isMobile}
+            pagination={{ 
+              clickable: true,
+              dynamicBullets: true,
+            }}
+            autoplay={{
+              delay: 3000,
+              disableOnInteraction: false,
+            }}
+            breakpoints={{
+              320: {
+                slidesPerView: 1,
+                grid: { rows: 1 },
+              },
+              640: {
+                slidesPerView: 2,
+                grid: { rows: 2 },
+              },
+              768: {
+                slidesPerView: 3,
+                grid: { rows: 2 },
+              },
+              1024: {
+                slidesPerView: 4,
+                grid: { rows: 2 },
+              },
+            }}
+            style={{
+              paddingBottom: '50px',
+            }}
+          >
+            {validImages.map((image, index) => (
+              <SwiperSlide key={index}>
+                <Card
+                  sx={{
+                    cursor: 'pointer',
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                    height: isMobile ? 250 : 200,
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: 4,
+                    },
+                  }}
+                  onClick={() => handleImageClick(image)}
+                >
+                  <Box position="relative" height="100%">
+                    <CardMedia
+                      component="img"
+                      height="100%"
+                      image={image.url}
+                      alt={image.alt || 'Crawled image'}
+                      onError={() => handleImageError(image.url)}
+                      sx={{
+                        objectFit: 'cover',
+                      }}
+                    />
+                    
+                    <Tooltip title="Open source page">
+                      <IconButton
+                        size="small"
+                        sx={{
+                          position: 'absolute',
+                          top: 8,
+                          right: 8,
+                          backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                          color: 'white',
+                          '&:hover': {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                          },
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenSource(image.sourceUrl);
+                        }}
+                      >
+                        <OpenInNewIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                </Card>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </Box>
+      ) : (
+        <Grid container spacing={isMobile ? 1 : 2}>
+          {validImages.map((image, index) => (
+            <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+              <Card
+                sx={{
+                  cursor: 'pointer',
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: 4,
+                  },
+                }}
+                onClick={() => handleImageClick(image)}
+              >
+                <Box position="relative">
+                  <CardMedia
+                    component="img"
+                    height={isMobile ? 180 : 200}
+                    image={image.url}
+                    alt={image.alt || 'Crawled image'}
+                    onError={() => handleImageError(image.url)}
+                    sx={{
+                      objectFit: 'cover',
+                    }}
+                  />
+                  
+                  <Tooltip title="Open source page">
+                    <IconButton
+                      size="small"
+                      sx={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                        color: 'white',
+                        '&:hover': {
+                          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        },
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenSource(image.sourceUrl);
+                      }}
+                    >
+                      <OpenInNewIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      )}
+
+      {/* Image Dialog */}
+      <Dialog
+        open={!!selectedImage}
+        onClose={handleCloseDialog}
+        maxWidth="lg"
+        fullWidth
+        fullScreen={isMobile}
+      >
+        <DialogContent sx={{ p: 0, position: 'relative' }}>
+          {selectedImage && (
+            <>
+              <IconButton
+                onClick={handleCloseDialog}
+                sx={{
+                  position: 'absolute',
+                  top: 16,
+                  right: 16,
+                  zIndex: 1,
+                  backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                  color: 'white',
+                  '&:hover': {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                  },
+                }}
+              >
+                <CloseIcon />
+              </IconButton>
+              
+              <Box
+                component="img"
+                src={selectedImage.url}
+                alt={selectedImage.alt || 'Selected image'}
+                sx={{
+                  width: '100%',
+                  height: 'auto',
+                  maxHeight: isMobile ? '70vh' : '80vh',
+                  objectFit: 'contain',
+                }}
+              />
+              
+              <Box p={isMobile ? 1 : 2}>
+                <Typography 
+                  variant="body2" 
+                  color="text.secondary" 
+                  gutterBottom
+                  sx={{ 
+                    wordBreak: 'break-all',
+                    fontSize: isMobile ? '0.75rem' : '0.875rem'
+                  }}
+                >
+                  Source: {selectedImage.sourceUrl}
+                </Typography>
+                {selectedImage.alt && (
+                  <Typography 
+                    variant="body2"
+                    sx={{ fontSize: isMobile ? '0.75rem' : '0.875rem' }}
+                  >
+                    Alt text: {selectedImage.alt}
+                  </Typography>
+                )}
+                
+                <Box mt={2}>
+                  <Button
+                    variant="contained"
+                    startIcon={<OpenInNewIcon />}
+                    onClick={() => handleOpenSource(selectedImage.sourceUrl)}
+                    size={isMobile ? "small" : "medium"}
+                    fullWidth={isMobile}
+                  >
+                    Visit Source Page
+                  </Button>
+                </Box>
+              </Box>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+    </Box>
+  );
+};
+
+export default ImageCarousel;
