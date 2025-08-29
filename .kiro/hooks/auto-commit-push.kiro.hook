@@ -1,0 +1,20 @@
+{
+  "enabled": true,
+  "name": "Auto Commit & Push",
+  "description": "Automatically commits and pushes code changes when the application is running without errors and all Vitest tests are passing",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "src/**/*.tsx",
+      "src/**/*.ts",
+      "server/**/*.js",
+      "package.json",
+      "server/package.json"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Check if the application is running without console errors and all Vitest tests are passing. If both conditions are met, commit the current changes with an appropriate commit message and push to the remote repository using git commands. Only proceed if there are no runtime errors, no console errors, and all tests pass successfully."
+  }
+}

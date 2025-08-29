@@ -19,13 +19,9 @@ import {
   OpenInNew as OpenInNewIcon,
   Close as CloseIcon,
 } from '@mui/icons-material';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, Autoplay, Grid as SwiperGrid } from 'swiper/modules';
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
-import 'swiper/css/grid';
-import '../styles/swiper-custom.css';
+import Carousel from 'react-multi-carousel';
+import 'react-multi-carousel/lib/styles.css';
+import '../styles/carousel-custom.css';
 import { ImageData } from '../types';
 
 interface ImageCarouselProps {
@@ -39,7 +35,25 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
   const [viewMode, setViewMode] = useState<'grid' | 'carousel'>('carousel');
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+
+  const responsive = {
+    superLargeDesktop: {
+      breakpoint: { max: 4000, min: 1400 },
+      items: 5
+    },
+    desktop: {
+      breakpoint: { max: 1400, min: 1024 },
+      items: 4
+    },
+    tablet: {
+      breakpoint: { max: 1024, min: 464 },
+      items: 2
+    },
+    mobile: {
+      breakpoint: { max: 464, min: 0 },
+      items: 1
+    }
+  };
 
   const handleImageError = (imageUrl: string) => {
     setImageErrors(prev => new Set(prev).add(imageUrl));
@@ -71,9 +85,9 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
         gap={2}
       >
         <Box>
-          <Typography 
-            variant={isMobile ? "h5" : "h4"} 
-            component="h1" 
+          <Typography
+            variant={isMobile ? "h5" : "h4"}
+            component="h1"
             gutterBottom
           >
             Found Images
@@ -87,7 +101,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
             />
           </Box>
         </Box>
-        
+
         <Box display="flex" gap={1} flexDirection={isMobile ? "row" : "row"}>
           <Button
             variant={viewMode === 'grid' ? 'contained' : 'outlined'}
@@ -130,52 +144,29 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
         </Box>
       ) : viewMode === 'carousel' ? (
         <Box sx={{ mb: 4 }}>
-          <Swiper
-            modules={[Navigation, Pagination, Autoplay, SwiperGrid]}
-            spaceBetween={isMobile ? 10 : 20}
-            slidesPerView={isMobile ? 1 : isTablet ? 2 : 4}
-            grid={{
-              rows: isMobile ? 1 : 2,
-              fill: 'row',
-            }}
-            navigation={!isMobile}
-            pagination={{ 
-              clickable: true,
-              dynamicBullets: true,
-            }}
-            autoplay={{
-              delay: 3000,
-              disableOnInteraction: false,
-            }}
-            breakpoints={{
-              320: {
-                slidesPerView: 1,
-                grid: { rows: 1 },
-              },
-              640: {
-                slidesPerView: 2,
-                grid: { rows: 2 },
-              },
-              768: {
-                slidesPerView: 3,
-                grid: { rows: 2 },
-              },
-              1024: {
-                slidesPerView: 4,
-                grid: { rows: 2 },
-              },
-            }}
-            style={{
-              paddingBottom: '50px',
-            }}
+          <Carousel
+            responsive={responsive}
+            infinite={true}
+            autoPlay={true}
+            autoPlaySpeed={3000}
+            keyBoardControl={true}
+            customTransition="all .5s"
+            transitionDuration={500}
+            containerClass="carousel-container"
+            removeArrowOnDeviceType={["tablet", "mobile"]}
+            dotListClass="custom-dot-list-style"
+            itemClass="carousel-item-padding-40-px"
+            showDots={true}
+            ssr={true}
           >
             {validImages.map((image, index) => (
-              <SwiperSlide key={index}>
+              <Box key={index} sx={{ px: 1 }}>
                 <Card
                   sx={{
                     cursor: 'pointer',
                     transition: 'transform 0.2s, box-shadow 0.2s',
                     height: isMobile ? 250 : 200,
+                    mx: 1,
                     '&:hover': {
                       transform: 'translateY(-4px)',
                       boxShadow: 4,
@@ -194,7 +185,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
                         objectFit: 'cover',
                       }}
                     />
-                    
+
                     <Tooltip title="Open source page">
                       <IconButton
                         size="small"
@@ -218,9 +209,9 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
                     </Tooltip>
                   </Box>
                 </Card>
-              </SwiperSlide>
+              </Box>
             ))}
-          </Swiper>
+          </Carousel>
         </Box>
       ) : (
         <Grid container spacing={isMobile ? 1 : 2}>
@@ -248,7 +239,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
                       objectFit: 'cover',
                     }}
                   />
-                  
+
                   <Tooltip title="Open source page">
                     <IconButton
                       size="small"
@@ -304,7 +295,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
               >
                 <CloseIcon />
               </IconButton>
-              
+
               <Box
                 component="img"
                 src={selectedImage.url}
@@ -316,13 +307,13 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
                   objectFit: 'contain',
                 }}
               />
-              
+
               <Box p={isMobile ? 1 : 2}>
-                <Typography 
-                  variant="body2" 
-                  color="text.secondary" 
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
                   gutterBottom
-                  sx={{ 
+                  sx={{
                     wordBreak: 'break-all',
                     fontSize: isMobile ? '0.75rem' : '0.875rem'
                   }}
@@ -330,14 +321,14 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
                   Source: {selectedImage.sourceUrl}
                 </Typography>
                 {selectedImage.alt && (
-                  <Typography 
+                  <Typography
                     variant="body2"
                     sx={{ fontSize: isMobile ? '0.75rem' : '0.875rem' }}
                   >
                     Alt text: {selectedImage.alt}
                   </Typography>
                 )}
-                
+
                 <Box mt={2}>
                   <Button
                     variant="contained"

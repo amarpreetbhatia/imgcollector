@@ -19,7 +19,7 @@ A lightweight React application that crawls websites to discover and display ima
 - **React 18** with TypeScript
 - **Material-UI (MUI)** for components and dark theme
 - **Joy UI** for enhanced progress indicators
-- **Swiper.js** for responsive carousel functionality
+- **React Multi Carousel** for responsive carousel functionality
 - **Node.js/Express** backend for web crawling
 - **Cheerio** for HTML parsing and crawling
 - **Axios** for HTTP requests with timeout handling

@@ -1,0 +1,83 @@
+/* Custom react-multi-carousel styles for dark theme */
+.react-multi-carousel-list {
+  padding-bottom: 40px;
+}
+
+.react-multi-carousel-track {
+  padding: 10px 0;
+}
+
+.react-multi-carousel-item {
+  padding: 0 8px;
+}
+
+/* Navigation arrows */
+.react-multiple-carousel__arrow {
+  background: rgba(144, 202, 249, 0.8) !important;
+  border: none !important;
+  border-radius: 50% !important;
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  min-height: 40px !important;
+}
+
+.react-multiple-carousel__arrow:hover {
+  background: rgba(144, 202, 249, 1) !important;
+}
+
+.react-multiple-carousel__arrow::before {
+  color: #121212 !important;
+  font-size: 16px !important;
+  font-weight: bold !important;
+}
+
+/* Dots pagination */
+.react-multi-carousel-dot-list {
+  bottom: 0 !important;
+  padding: 10px 0 !important;
+}
+
+.react-multi-carousel-dot button {
+  background: rgba(144, 202, 249, 0.5) !important;
+  border: none !important;
+  width: 10px !important;
+  height: 10px !important;
+  border-radius: 50% !important;
+  margin: 0 4px !important;
+}
+
+.react-multi-carousel-dot--active button {
+  background: #90caf9 !important;
+}
+
+/* Container styling */
+.carousel-container {
+  padding: 0 20px;
+}
+
+.carousel-item-padding-40-px {
+  padding: 0 8px;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 464px) {
+  .carousel-container {
+    padding: 0 10px;
+  }
+  
+  .react-multi-carousel-item {
+    padding: 0 4px;
+  }
+  
+  .carousel-item-padding-40-px {
+    padding: 0 4px;
+  }
+}
+
+/* Tablet adjustments */
+@media (max-width: 1024px) and (min-width: 465px) {
+  .carousel-container {
+    padding: 0 15px;
+  }
+}
