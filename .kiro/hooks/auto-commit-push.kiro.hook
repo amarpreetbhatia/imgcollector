@@ -4,7 +4,7 @@
   "description": "Automatically commits and pushes code changes when the application is running without errors and all Vitest tests are passing",
   "version": "1",
   "when": {
-    "type": "fileEdited",
+    "type": "userTriggered",
     "patterns": [
       "src/**/*.tsx",
       "src/**/*.ts",

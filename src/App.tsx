@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Container, Box, useTheme, useMediaQuery } from '@mui/material';
 import WelcomeScreen from './components/WelcomeScreen';
 import ImageCarousel from './components/ImageCarousel';

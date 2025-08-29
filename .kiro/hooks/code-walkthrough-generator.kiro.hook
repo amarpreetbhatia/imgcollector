@@ -1,0 +1,21 @@
+{
+  "enabled": true,
+  "name": "Code Walkthrough Generator",
+  "description": "Monitors project files and creates/updates a code-walkthrough.md file in the root directory with step-by-step code walkthrough details, data flow explanations, rules and algorithms for peer developers",
+  "version": "1",
+  "when": {
+    "type": "userTriggered",
+    "patterns": [
+      "src/**/*.tsx",
+      "src/**/*.ts",
+      "server/**/*.js",
+      "package.json",
+      "tsconfig.json",
+      "vite.config.ts"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Check if code-walkthrough.md exists in the root folder. If not, create it. Act as a lead engineer and provide a comprehensive step-by-step code walkthrough from end to end in the file. Include bullet points covering the rules and algorithms used in this project. Focus on helping developers understand the application's code structure and data flow - do not include build/run instructions as those are in README.md. Make it a quick reference for code understanding that explains the technical architecture, component relationships, data flow patterns, and key implementation details."
+  }
+}
