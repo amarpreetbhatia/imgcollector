@@ -49,11 +49,16 @@ class CollageService {
       // Draw images
       await this.drawImages(loadedImages, layout, options);
 
-      // Convert to blob
+      // Convert to blob and create URL for preview
       return new Promise((resolve) => {
         this.canvas.toBlob((blob) => {
           if (blob) {
-            resolve({ success: true, imageBlob: blob });
+            const imageUrl = URL.createObjectURL(blob);
+            resolve({ 
+              success: true, 
+              imageBlob: blob,
+              imageUrl: imageUrl
+            });
           } else {
             resolve({ success: false, error: 'Failed to generate collage image' });
           }

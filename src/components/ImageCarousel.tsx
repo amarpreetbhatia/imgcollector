@@ -33,6 +33,7 @@ import '../styles/carousel-custom.css';
 import { ImageData } from '../types';
 import { downloadService, DownloadProgress } from '../utils/downloadService';
 import { collageService } from '../utils/collageService';
+import CollagePreviewDialog from './CollagePreviewDialog';
 
 interface ImageCarouselProps {
   images: ImageData[];
@@ -52,6 +53,11 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
   const [isGeneratingCollage, setIsGeneratingCollage] = useState(false);
   const [collageSuccess, setCollageSuccess] = useState(false);
   const [collageError, setCollageError] = useState<string | null>(null);
+  const [collagePreview, setCollagePreview] = useState<{
+    blob: Blob | null;
+    url: string | null;
+  }>({ blob: null, url: null });
+  const [showCollagePreview, setShowCollagePreview] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -186,11 +192,13 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
       const selectedImageData = getSelectedImageData();
       const result = await collageService.generateCollage(selectedImageData);
 
-      if (result.success && result.imageBlob) {
-        collageService.downloadCollage(result.imageBlob, 'image-collage.png');
+      if (result.success && result.imageBlob && result.imageUrl) {
+        setCollagePreview({
+          blob: result.imageBlob,
+          url: result.imageUrl,
+        });
+        setShowCollagePreview(true);
         setCollageSuccess(true);
-        setSelectionMode(false);
-        setSelectedImages(new Set());
       } else {
         setCollageError(result.error || 'Failed to generate collage');
       }
@@ -208,6 +216,17 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
 
   const handleCloseCollageError = () => {
     setCollageError(null);
+  };
+
+  const handleCloseCollagePreview = () => {
+    setShowCollagePreview(false);
+    // Clean up the object URL to prevent memory leaks
+    if (collagePreview.url) {
+      URL.revokeObjectURL(collagePreview.url);
+    }
+    setCollagePreview({ blob: null, url: null });
+    setSelectionMode(false);
+    setSelectedImages(new Set());
   };
 
   return (
@@ -668,7 +687,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <Alert onClose={handleCloseCollageSuccess} severity="success" sx={{ width: '100%' }}>
-          Collage generated successfully! Check your downloads folder.
+          Collage generated successfully! Preview it and order a print.
         </Alert>
       </Snackbar>
 
@@ -683,6 +702,14 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
           Collage generation failed: {collageError}
         </Alert>
       </Snackbar>
+
+      {/* Collage Preview Dialog */}
+      <CollagePreviewDialog
+        open={showCollagePreview}
+        onClose={handleCloseCollagePreview}
+        imageBlob={collagePreview.blob}
+        imageUrl={collagePreview.url}
+      />
     </Box>
   );
 };

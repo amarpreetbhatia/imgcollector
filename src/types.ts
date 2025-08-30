@@ -39,5 +39,20 @@ export interface CollageOptions {
 export interface CollageResult {
   success: boolean;
   imageBlob?: Blob;
+  imageUrl?: string;
+  error?: string;
+}
+
+export interface PrintOptions {
+  size: 'small' | 'medium' | 'large'; // 12x18, 18x24, 24x36
+  paperType: 'matte' | 'glossy';
+  quantity: number;
+}
+
+export interface PrintOrderResult {
+  success: boolean;
+  orderId?: string;
+  orderUrl?: string;
+  estimatedCost?: number;
   error?: string;
 }
