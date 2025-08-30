@@ -1,0 +1,35 @@
+<svg width="120" height="40" viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="compactGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="compactAccent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f093fb;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f5576c;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Icon -->
+  <g transform="translate(5, 8)">
+    <!-- Collage grid -->
+    <rect x="0" y="0" width="10" height="10" rx="1.5" fill="url(#compactGradient)" opacity="0.9"/>
+    <rect x="12" y="0" width="10" height="10" rx="1.5" fill="url(#compactGradient)" opacity="0.7"/>
+    <rect x="0" y="12" width="10" height="12" rx="1.5" fill="url(#compactGradient)" opacity="0.8"/>
+    <rect x="12" y="12" width="10" height="12" rx="1.5" fill="url(#compactGradient)" opacity="0.9"/>
+    
+    <!-- Creative spark -->
+    <g transform="translate(24, 2)">
+      <line x1="0" y1="0" x2="6" y2="6" stroke="url(#compactAccent)" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="0" cy="0" r="1.5" fill="url(#compactAccent)"/>
+    </g>
+  </g>
+  
+  <!-- Text -->
+  <text x="40" y="18" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="url(#compactGradient)">
+    Collage<tspan fill="url(#compactAccent)">Forge</tspan>
+  </text>
+  <text x="40" y="30" font-family="Arial, sans-serif" font-size="7" fill="#666666">
+    Discover • Create • Print
+  </text>
+</svg>

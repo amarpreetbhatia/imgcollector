@@ -148,7 +148,9 @@ const CollagePreviewDialog: React.FC<CollagePreviewDialogProps> = ({
     >
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Typography variant="h6">Collage Preview</Typography>
+          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+            🎨 Your Custom Collage
+          </Typography>
           <Button
             onClick={handleClose}
             startIcon={<CloseIcon />}
@@ -165,8 +167,8 @@ const CollagePreviewDialog: React.FC<CollagePreviewDialogProps> = ({
           <Grid item xs={12} md={8}>
             <Card>
               <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Preview
+                <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
+                  🖼️ Collage Preview
                 </Typography>
                 {imageUrl && (
                   <Box
@@ -192,8 +194,8 @@ const CollagePreviewDialog: React.FC<CollagePreviewDialogProps> = ({
           <Grid item xs={12} md={4}>
             <Card>
               <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Print Options
+                <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
+                  🖨️ Print Your Poster
                 </Typography>
 
                 <Box display="flex" flexDirection="column" gap={2}>
@@ -415,7 +417,7 @@ const CollagePreviewDialog: React.FC<CollagePreviewDialogProps> = ({
               startIcon={<PrintIcon />}
               variant="outlined"
             >
-              Email Order
+              📧 Email Order
             </Button>
             <Button
               onClick={handlePrintOrder}
@@ -423,7 +425,7 @@ const CollagePreviewDialog: React.FC<CollagePreviewDialogProps> = ({
               variant="contained"
               color="primary"
             >
-              Order Print
+              🛒 Order Custom Print
             </Button>
           </>
         )}

@@ -1,6 +1,6 @@
 {
-    "name": "image-crawler-app",
-    "version": "0.1.0",
+    "name": "collageforge",
+    "version": "1.0.0",
     "private": true,
     "dependencies": {
         "@emotion/react": "^11.11.1",

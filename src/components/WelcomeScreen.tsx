@@ -115,34 +115,46 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
           mx: 'auto',
         }}
       >
-        <Typography 
-          variant={isMobile ? "h4" : "h3"} 
-          component="h1" 
-          gutterBottom 
-          color="primary"
-        >
-          Image Crawler
-        </Typography>
+        <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
+          <img 
+            src="/logo.svg" 
+            alt="CollageForge Logo" 
+            style={{ 
+              height: isMobile ? '50px' : '60px',
+              width: 'auto'
+            }}
+          />
+        </Box>
         
         <Typography 
           variant={isMobile ? "body1" : "h6"} 
           color="text.secondary" 
           paragraph
+          sx={{ fontWeight: 500 }}
         >
-          Discover and browse images from any website
+          Create stunning photo collages and order custom prints
+        </Typography>
+
+        <Typography 
+          variant="body2" 
+          color="text.secondary" 
+          paragraph
+          sx={{ mb: 3, fontStyle: 'italic' }}
+        >
+          Discover • Create • Print
         </Typography>
 
         <Box sx={{ mt: 4, mb: 3 }}>
           <TextField
             fullWidth
-            label="Enter Website URL"
+            label="Enter Website URL to Source Images"
             placeholder="example.com or https://example.com"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             onKeyPress={handleKeyPress}
             disabled={isLoading}
             error={!!error}
-            helperText={error || 'We\'ll crawl up to 50 images within 3 minutes'}
+            helperText={error || 'We\'ll discover up to 50 images to create your collage'}
             sx={{ mb: 3 }}
           />
 
@@ -158,7 +170,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
               />
               <LinearProgress variant="determinate" value={progress} sx={{ width: '100%' }} />
               <Typography variant="body2" color="text.secondary">
-                Crawling images... {Math.round(progress)}%
+                Discovering images for your collage... {Math.round(progress)}%
               </Typography>
             </Box>
           )}
@@ -174,21 +186,23 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
               fontSize: isMobile ? '0.875rem' : '1rem'
             }}
           >
-            {isLoading ? 'Crawling...' : 'Start Crawling'}
+            {isLoading ? 'Discovering Images...' : 'Discover Images'}
           </Button>
         </Box>
 
         <Alert severity="info" sx={{ textAlign: 'left' }}>
           <Typography variant="body2">
-            <strong>Features:</strong>
+            <strong>How it works:</strong>
             <br />
-            • Respects robots.txt and nofollow directives
+            • 🔍 Discover images from any website (up to 50 images)
             <br />
-            • Crawls main page + one level of internal links
+            • 🎨 Select up to 5 images to create your custom collage
             <br />
-            • Collects up to 50 images or stops after 3 minutes
+            • 🖼️ Preview your collage with smart auto-layouts
             <br />
-            • Click any image to visit its source page
+            • 🖨️ Order professional prints (12"×18" to 24"×36")
+            <br />
+            • 📦 Get your custom poster delivered to your door
           </Typography>
         </Alert>
       </Paper>

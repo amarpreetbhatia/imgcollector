@@ -241,16 +241,38 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
         gap={2}
       >
         <Box>
-          <Typography
-            variant={isMobile ? "h5" : "h4"}
-            component="h1"
-            gutterBottom
-          >
-            Found Images
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+            <img 
+              src="/logo-compact.svg" 
+              alt="CollageForge" 
+              style={{ 
+                height: isMobile ? '30px' : '35px',
+                width: 'auto'
+              }}
+            />
+            {!isMobile && (
+              <Typography
+                variant="h5"
+                component="h1"
+                sx={{ fontWeight: 'bold', color: 'text.primary' }}
+              >
+                Create Your Collage
+              </Typography>
+            )}
+          </Box>
+          {isMobile && (
+            <Typography
+              variant="h6"
+              component="h1"
+              gutterBottom
+              sx={{ fontWeight: 'bold' }}
+            >
+              Create Your Collage
+            </Typography>
+          )}
           <Box display="flex" gap={1} flexWrap="wrap">
             <Chip
-              label={`${validImages.length} images found`}
+              label={`${validImages.length} images discovered`}
               color="primary"
               variant="outlined"
               size={isMobile ? "small" : "medium"}
@@ -295,7 +317,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
               disabled={isDownloading || isGeneratingCollage || validImages.length === 0}
               size={isMobile ? "small" : "medium"}
             >
-              {selectionMode ? `Selected (${selectedImages.size}/5)` : 'Create Collage'}
+              {selectionMode ? `Selected (${selectedImages.size}/5)` : '🎨 Create Collage'}
             </Button>
 
             {selectionMode && (
@@ -306,7 +328,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
                 disabled={selectedImages.size === 0 || isGeneratingCollage}
                 size={isMobile ? "small" : "medium"}
               >
-                {isGeneratingCollage ? 'Generating...' : `Generate Collage (${selectedImages.size})`}
+                {isGeneratingCollage ? '🎨 Creating Collage...' : `✨ Create Collage (${selectedImages.size})`}
               </Button>
             )}
 
@@ -328,7 +350,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
               disabled={isDownloading || isGeneratingCollage}
               size={isMobile ? "small" : "medium"}
             >
-              {isMobile ? 'Back' : 'Back to Search'}
+              {isMobile ? 'New Search' : 'Discover New Images'}
             </Button>
           </Box>
         </Box>
@@ -356,15 +378,18 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
       {/* Images Carousel */}
       {validImages.length === 0 ? (
         <Box textAlign="center" py={8}>
-          <Typography variant="h6" color="text.secondary">
-            No valid images could be loaded
+          <Typography variant="h6" color="text.secondary" gutterBottom>
+            No images found for collage creation
+          </Typography>
+          <Typography variant="body2" color="text.secondary" paragraph>
+            Try a different website with more visual content
           </Typography>
           <Button
             variant="contained"
             onClick={onBack}
             sx={{ mt: 2 }}
           >
-            Try Another URL
+            🔍 Try Another Website
           </Button>
         </Box>
       ) : viewMode === 'carousel' ? (
@@ -687,7 +712,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <Alert onClose={handleCloseCollageSuccess} severity="success" sx={{ width: '100%' }}>
-          Collage generated successfully! Preview it and order a print.
+          🎉 Your collage is ready! Preview and order your custom print.
         </Alert>
       </Snackbar>
 
