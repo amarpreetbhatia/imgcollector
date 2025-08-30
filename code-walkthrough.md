@@ -71,6 +71,26 @@ App → WelcomeScreen (initial) → ImageCarousel (after crawl)
 - Responsive design with mobile-first approach
 - External link handling with security attributes
 - **Secure Bulk Download**: Integrated download functionality with progress tracking
+- **Collage Creation**: Multi-select mode for creating image collages (max 5 images)
+
+**State Management:**
+```typescript
+// Core display state
+selectedImage: ImageData | null          // Full-screen dialog
+imageErrors: Set<string>                 // Failed image URLs
+viewMode: 'grid' | 'carousel'           // Display mode toggle
+
+// Download state
+isDownloading: boolean                   // Download in progress
+downloadProgress: DownloadProgress       // Real-time progress
+downloadError: string | null            // Error messages
+downloadSuccess: boolean                 // Success notifications
+
+// Collage state
+selectionMode: boolean                   // Multi-select mode
+selectedImages: Set<string>              // Selected image URLs (max 5)
+isGeneratingCollage: boolean            // Collage generation state
+```
 
 **Download Integration:**
 - Smart button states (Download All/Cancel based on state)
@@ -79,12 +99,28 @@ App → WelcomeScreen (initial) → ImageCarousel (after crawl)
 - Success feedback and automatic cleanup
 - Download cancellation support
 
+**Collage Integration:**
+- Toggle selection mode for multi-select
+- Visual selection indicators with numbered badges
+- Maximum 5 image selection limit
+- Real-time selection counter
+- Integrated collage generation and download
+
 **Responsive Breakpoints:**
 ```javascript
 superLargeDesktop: 5 items (1400px+)
 desktop: 4 items (1024-1400px)
 tablet: 2 items (464-1024px)
 mobile: 1 item (0-464px)
+```
+
+**UI State Logic:**
+```javascript
+// Button visibility and states
+downloadButton: enabled when images > 0 && !selectionMode && !downloading
+collageButton: toggles selectionMode, shows selection count
+generateButton: enabled when selectedImages.size > 0
+cancelButton: shown only during active download
 ```
 
 ## Backend Architecture (`server/server.js`)
@@ -157,6 +193,39 @@ if (foundImages.has(url)) skip;
 - Timeout protection (30 seconds per image)
 - Filename sanitization and collision prevention
 
+## Collage Generation Architecture
+
+### Collage Service (`src/utils/collageService.ts`)
+
+**Core Components:**
+- **CollageService**: Canvas-based image composition engine
+- **Layout Calculator**: Dynamic layout generation based on image count
+- **Image Loader**: Cross-origin image loading with error handling
+
+**Collage Generation Algorithm:**
+1. **Canvas Setup**: Create HTML5 canvas with specified dimensions
+2. **Image Loading**: Load all selected images with CORS support
+3. **Layout Calculation**: Generate optimal layout based on image count (1-5)
+4. **Aspect Ratio Fitting**: Maintain image proportions within layout bounds
+5. **Canvas Rendering**: Draw images with rounded corners and proper positioning
+6. **Blob Export**: Convert canvas to PNG blob for download
+
+**Layout Patterns:**
+```javascript
+1 image:  [Full canvas]
+2 images: [Half|Half] (horizontal split)
+3 images: [Third|Third|Third] (horizontal thirds)
+4 images: [Quarter grid] (2x2 grid)
+5 images: [Two top halves] + [Three bottom thirds]
+```
+
+**Canvas Rendering Pipeline:**
+- Background fill with configurable color
+- Image aspect ratio preservation
+- Rounded corner clipping (8px radius)
+- Centered positioning within layout bounds
+- Padding management between images
+
 ### Download Service (`src/utils/downloadService.ts`)
 
 **Responsibilities:**
@@ -217,6 +286,24 @@ DownloadResult: {
   downloadedCount?: number;
   totalCount?: number;
   error?: string;
+}
+
+CollageOptions: {
+  width: number;      // Canvas width in pixels
+  height: number;     // Canvas height in pixels
+  layout: 'grid' | 'mosaic';  // Layout algorithm type
+  backgroundColor: string;     // Background color (hex)
+  padding: number;    // Padding between images
+}
+
+CollageResult: {
+  success: boolean;
+  imageBlob?: Blob;   // Generated collage PNG
+  error?: string;     // Error message if generation failed
+}
+
+RobotsTxt: {
+  isAllowed: (userAgent: string, path: string) => boolean;
 }
 ```
 
@@ -291,6 +378,35 @@ class Semaphore {
 }
 ```
 
+### Collage Layout Algorithm
+```javascript
+calculateLayout(imageCount, options) {
+  const { width, height, padding } = options;
+  const availableWidth = width - padding * 2;
+  const availableHeight = height - padding * 2;
+
+  switch (imageCount) {
+    case 1: return [fullCanvas];
+    case 2: return [leftHalf, rightHalf];
+    case 3: return [leftThird, centerThird, rightThird];
+    case 4: return [topLeft, topRight, bottomLeft, bottomRight];
+    case 5: return [topLeft, topRight, bottomLeft, bottomCenter, bottomRight];
+  }
+}
+```
+
+### Canvas Rendering Algorithm
+```javascript
+drawRoundedImage(img, x, y, width, height, radius) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.roundRect(x, y, width, height, radius);  // Create rounded rectangle path
+  ctx.clip();                                  // Set clipping region
+  ctx.drawImage(img, x, y, width, height);    // Draw image within clip
+  ctx.restore();                              // Restore context state
+}
+```
+
 ### Responsive Design Strategy
 - **Mobile-First**: Base styles for mobile, progressive enhancement
 - **Breakpoint System**: Material-UI's standard breakpoints (xs, sm, md, lg, xl)
@@ -318,6 +434,13 @@ class Semaphore {
 - **Compression**: ZIP files use DEFLATE compression (level 6)
 - **Progress Batching**: UI updates batched to prevent excessive re-renders
 - **Automatic Cleanup**: Blob URLs and resources cleaned up immediately
+
+### Collage Performance
+- **Canvas Optimization**: Hardware-accelerated 2D rendering
+- **Image Caching**: Loaded images reused across operations
+- **Memory Management**: Canvas cleared and reused for multiple generations
+- **Aspect Ratio Preservation**: Efficient scaling calculations
+- **Blob Generation**: Optimized PNG export with 0.9 quality
 
 ### Caching Strategy
 - **URL Deduplication**: Set-based visited URL tracking
@@ -404,9 +527,22 @@ npm run dev  # Runs both frontend and backend simultaneously
 2. Validation → API Call → Backend Crawler
 3. HTML Parsing → Image Extraction → Response
 4. Image Display → ImageCarousel (Grid/Carousel)
-5. Download Request → DownloadService → Service Worker
-6. Parallel Downloads → ZIP Creation → File Download
-7. Progress Updates → UI Feedback → Completion
+5a. Download Path: Download Request → DownloadService → Service Worker
+    → Parallel Downloads → ZIP Creation → File Download
+5b. Collage Path: Selection Mode → Multi-select → CollageService
+    → Canvas Generation → PNG Download
+6. Progress Updates → UI Feedback → Completion
+```
+
+### Collage Generation Flow
+```
+ImageCarousel → Toggle Selection Mode → Multi-select Images (max 5)
+     ↓                    ↓                      ↓
+Selection UI → Image Selection → Generate Collage Button
+     ↓                    ↓                      ↓
+CollageService → Canvas Setup → Image Loading → Layout Calculation
+     ↓                    ↓                      ↓
+Canvas Rendering → PNG Export → Automatic Download → Success Feedback
 ```
 
 ### Service Worker Communication
@@ -435,3 +571,52 @@ Validation Error → Early Rejection → Error State → UI Feedback
 - **Completion**: Resource cleanup and success notification
 - **Error Handling**: Graceful degradation and user feedback
 - **Cleanup**: Component unmount cleanup and worker termination
+
+### Collage State Management
+- **Selection Mode**: Toggle between normal and multi-select modes
+- **Image Selection**: Track selected images with Set data structure
+- **Generation Process**: Canvas creation, image loading, and rendering
+- **Export Process**: PNG blob generation and automatic download
+- **State Reset**: Clear selections and return to normal mode
+
+## Advanced Implementation Details
+
+### Error Boundary Patterns
+```javascript
+// Image loading with fallback
+<CardMedia
+  onError={() => handleImageError(image.url)}
+  // Removes failed images from display
+/>
+
+// Service worker error isolation
+worker.onerror = (error) => {
+  console.error('Worker error:', error);
+  this.cleanup(); // Graceful degradation
+};
+```
+
+### Memory Management Strategies
+- **Set-based Deduplication**: Prevents duplicate processing
+- **Blob URL Cleanup**: Automatic cleanup with setTimeout
+- **Canvas Context Reuse**: Single canvas instance for all collages
+- **Image Reference Management**: Proper cleanup of loaded images
+- **Worker Termination**: Clean shutdown on component unmount
+
+### Cross-Origin Resource Handling
+```javascript
+// Image loading with CORS
+img.crossOrigin = 'anonymous';
+
+// Service worker fetch with CORS
+fetch(url, {
+  mode: 'cors',
+  credentials: 'omit'  // No credentials for security
+});
+```
+
+### Progressive Enhancement Patterns
+- **Feature Detection**: Check for service worker support
+- **Graceful Degradation**: Fallback UI states for unsupported features
+- **Responsive Design**: Mobile-first with progressive enhancement
+- **Accessibility**: Proper ARIA labels and keyboard navigation

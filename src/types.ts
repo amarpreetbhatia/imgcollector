@@ -27,3 +27,17 @@ export interface DownloadResult {
   totalCount?: number;
   error?: string;
 }
+
+export interface CollageOptions {
+  width: number;
+  height: number;
+  layout: 'grid' | 'mosaic';
+  backgroundColor: string;
+  padding: number;
+}
+
+export interface CollageResult {
+  success: boolean;
+  imageBlob?: Blob;
+  error?: string;
+}

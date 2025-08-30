@@ -16,18 +16,23 @@ import {
   LinearProgress,
   Alert,
   Snackbar,
+  Checkbox,
+  Badge,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
   OpenInNew as OpenInNewIcon,
   Close as CloseIcon,
   Download as DownloadIcon,
+  CollectionsBookmark as CollageIcon,
+  CheckCircle as CheckCircleIcon,
 } from '@mui/icons-material';
 import Carousel from 'react-multi-carousel';
 import 'react-multi-carousel/lib/styles.css';
 import '../styles/carousel-custom.css';
 import { ImageData } from '../types';
 import { downloadService, DownloadProgress } from '../utils/downloadService';
+import { collageService } from '../utils/collageService';
 
 interface ImageCarouselProps {
   images: ImageData[];
@@ -42,6 +47,11 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
   const [downloadProgress, setDownloadProgress] = useState<DownloadProgress | null>(null);
   const [downloadError, setDownloadError] = useState<string | null>(null);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedImages, setSelectedImages] = useState<Set<string>>(new Set());
+  const [isGeneratingCollage, setIsGeneratingCollage] = useState(false);
+  const [collageSuccess, setCollageSuccess] = useState(false);
+  const [collageError, setCollageError] = useState<string | null>(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -69,7 +79,34 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
   };
 
   const handleImageClick = (image: ImageData) => {
-    setSelectedImage(image);
+    if (selectionMode) {
+      toggleImageSelection(image.url);
+    } else {
+      setSelectedImage(image);
+    }
+  };
+
+  const toggleImageSelection = (imageUrl: string) => {
+    setSelectedImages(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(imageUrl)) {
+        newSet.delete(imageUrl);
+      } else if (newSet.size < 5) {
+        newSet.add(imageUrl);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleSelectionMode = () => {
+    setSelectionMode(!selectionMode);
+    if (selectionMode) {
+      setSelectedImages(new Set());
+    }
+  };
+
+  const getSelectedImageData = (): ImageData[] => {
+    return validImages.filter(img => selectedImages.has(img.url));
   };
 
   const handleCloseDialog = () => {
@@ -135,6 +172,44 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
     setDownloadError(null);
   };
 
+  // Collage functionality
+  const handleGenerateCollage = async () => {
+    if (selectedImages.size === 0) {
+      setCollageError('Please select at least one image');
+      return;
+    }
+
+    try {
+      setIsGeneratingCollage(true);
+      setCollageError(null);
+
+      const selectedImageData = getSelectedImageData();
+      const result = await collageService.generateCollage(selectedImageData);
+
+      if (result.success && result.imageBlob) {
+        collageService.downloadCollage(result.imageBlob, 'image-collage.png');
+        setCollageSuccess(true);
+        setSelectionMode(false);
+        setSelectedImages(new Set());
+      } else {
+        setCollageError(result.error || 'Failed to generate collage');
+      }
+    } catch (error) {
+      console.error('Collage generation failed:', error);
+      setCollageError(error instanceof Error ? error.message : 'Failed to generate collage');
+    } finally {
+      setIsGeneratingCollage(false);
+    }
+  };
+
+  const handleCloseCollageSuccess = () => {
+    setCollageSuccess(false);
+  };
+
+  const handleCloseCollageError = () => {
+    setCollageError(null);
+  };
+
   return (
     <Box>
       {/* Header */}
@@ -161,6 +236,14 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
               variant="outlined"
               size={isMobile ? "small" : "medium"}
             />
+            {selectionMode && (
+              <Chip
+                label={`${selectedImages.size}/5 selected for collage`}
+                color="secondary"
+                variant="filled"
+                size={isMobile ? "small" : "medium"}
+              />
+            )}
           </Box>
         </Box>
 
@@ -170,7 +253,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
               variant={viewMode === 'grid' ? 'contained' : 'outlined'}
               size={isMobile ? "small" : "medium"}
               onClick={() => setViewMode('grid')}
-              disabled={isDownloading}
+              disabled={isDownloading || isGeneratingCollage}
             >
               Grid
             </Button>
@@ -178,19 +261,42 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
               variant={viewMode === 'carousel' ? 'contained' : 'outlined'}
               size={isMobile ? "small" : "medium"}
               onClick={() => setViewMode('carousel')}
-              disabled={isDownloading}
+              disabled={isDownloading || isGeneratingCollage}
             >
               Carousel
             </Button>
           </Box>
           
-          <Box display="flex" gap={1}>
+          <Box display="flex" gap={1} flexWrap="wrap">
+            <Button
+              variant={selectionMode ? 'contained' : 'outlined'}
+              color="secondary"
+              startIcon={<CollageIcon />}
+              onClick={toggleSelectionMode}
+              disabled={isDownloading || isGeneratingCollage || validImages.length === 0}
+              size={isMobile ? "small" : "medium"}
+            >
+              {selectionMode ? `Selected (${selectedImages.size}/5)` : 'Create Collage'}
+            </Button>
+
+            {selectionMode && (
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleGenerateCollage}
+                disabled={selectedImages.size === 0 || isGeneratingCollage}
+                size={isMobile ? "small" : "medium"}
+              >
+                {isGeneratingCollage ? 'Generating...' : `Generate Collage (${selectedImages.size})`}
+              </Button>
+            )}
+
             <Button
               variant="contained"
               color="primary"
               startIcon={<DownloadIcon />}
               onClick={isDownloading ? handleCancelDownload : handleDownload}
-              disabled={validImages.length === 0}
+              disabled={validImages.length === 0 || selectionMode || isGeneratingCollage}
               size={isMobile ? "small" : "medium"}
             >
               {isDownloading ? 'Cancel' : `Download All (${validImages.length})`}
@@ -200,7 +306,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
               variant="outlined"
               startIcon={<ArrowBackIcon />}
               onClick={onBack}
-              disabled={isDownloading}
+              disabled={isDownloading || isGeneratingCollage}
               size={isMobile ? "small" : "medium"}
             >
               {isMobile ? 'Back' : 'Back to Search'}
@@ -283,8 +389,50 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
                       onError={() => handleImageError(image.url)}
                       sx={{
                         objectFit: 'cover',
+                        opacity: selectionMode && !selectedImages.has(image.url) ? 0.6 : 1,
+                        transition: 'opacity 0.2s',
                       }}
                     />
+
+                    {selectionMode && (
+                      <Checkbox
+                        checked={selectedImages.has(image.url)}
+                        onChange={() => toggleImageSelection(image.url)}
+                        disabled={!selectedImages.has(image.url) && selectedImages.size >= 5}
+                        sx={{
+                          position: 'absolute',
+                          top: 8,
+                          left: 8,
+                          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                          borderRadius: '50%',
+                          '&:hover': {
+                            backgroundColor: 'rgba(255, 255, 255, 1)',
+                          },
+                        }}
+                        icon={<CheckCircleIcon />}
+                        checkedIcon={<CheckCircleIcon />}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    )}
+
+                    {selectedImages.has(image.url) && (
+                      <Badge
+                        badgeContent={Array.from(selectedImages).indexOf(image.url) + 1}
+                        color="primary"
+                        sx={{
+                          position: 'absolute',
+                          top: 8,
+                          left: selectionMode ? 48 : 8,
+                          '& .MuiBadge-badge': {
+                            backgroundColor: theme.palette.primary.main,
+                            color: 'white',
+                            fontWeight: 'bold',
+                          },
+                        }}
+                      >
+                        <Box width={20} height={20} />
+                      </Badge>
+                    )}
 
                     <Tooltip title="Open source page">
                       <IconButton
@@ -337,8 +485,50 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
                     onError={() => handleImageError(image.url)}
                     sx={{
                       objectFit: 'cover',
+                      opacity: selectionMode && !selectedImages.has(image.url) ? 0.6 : 1,
+                      transition: 'opacity 0.2s',
                     }}
                   />
+
+                  {selectionMode && (
+                    <Checkbox
+                      checked={selectedImages.has(image.url)}
+                      onChange={() => toggleImageSelection(image.url)}
+                      disabled={!selectedImages.has(image.url) && selectedImages.size >= 5}
+                      sx={{
+                        position: 'absolute',
+                        top: 8,
+                        left: 8,
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                        borderRadius: '50%',
+                        '&:hover': {
+                          backgroundColor: 'rgba(255, 255, 255, 1)',
+                        },
+                      }}
+                      icon={<CheckCircleIcon />}
+                      checkedIcon={<CheckCircleIcon />}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  )}
+
+                  {selectedImages.has(image.url) && (
+                    <Badge
+                      badgeContent={Array.from(selectedImages).indexOf(image.url) + 1}
+                      color="primary"
+                      sx={{
+                        position: 'absolute',
+                        top: 8,
+                        left: selectionMode ? 48 : 8,
+                        '& .MuiBadge-badge': {
+                          backgroundColor: theme.palette.primary.main,
+                          color: 'white',
+                          fontWeight: 'bold',
+                        },
+                      }}
+                    >
+                      <Box width={20} height={20} />
+                    </Badge>
+                  )}
 
                   <Tooltip title="Open source page">
                     <IconButton
@@ -467,6 +657,30 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
       >
         <Alert onClose={handleCloseError} severity="error" sx={{ width: '100%' }}>
           Download failed: {downloadError}
+        </Alert>
+      </Snackbar>
+
+      {/* Collage Success Snackbar */}
+      <Snackbar
+        open={collageSuccess}
+        autoHideDuration={6000}
+        onClose={handleCloseCollageSuccess}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseCollageSuccess} severity="success" sx={{ width: '100%' }}>
+          Collage generated successfully! Check your downloads folder.
+        </Alert>
+      </Snackbar>
+
+      {/* Collage Error Snackbar */}
+      <Snackbar
+        open={!!collageError}
+        autoHideDuration={8000}
+        onClose={handleCloseCollageError}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseCollageError} severity="error" sx={{ width: '100%' }}>
+          Collage generation failed: {collageError}
         </Alert>
       </Snackbar>
     </Box>
