@@ -18,6 +18,10 @@ import {
   Snackbar,
   Checkbox,
   Badge,
+  Stack,
+  Divider,
+  Paper,
+  ButtonGroup,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -26,6 +30,8 @@ import {
   Download as DownloadIcon,
   CollectionsBookmark as CollageIcon,
   CheckCircle as CheckCircleIcon,
+  ViewModule as GridIcon,
+  ViewCarousel as CarouselIcon,
 } from '@mui/icons-material';
 import Carousel from 'react-multi-carousel';
 import 'react-multi-carousel/lib/styles.css';
@@ -231,51 +237,57 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
 
   return (
     <Box>
-      {/* Header */}
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems={isMobile ? "flex-start" : "center"}
-        mb={3}
-        flexDirection={isMobile ? "column" : "row"}
-        gap={2}
+      {/* Header Section - Improved UX */}
+      <Paper
+        elevation={1}
+        sx={{
+          p: { xs: 2, md: 3 },
+          mb: 3,
+          borderRadius: 2,
+          background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%)'
+        }}
       >
-        <Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-            <img 
-              src="/logo-compact.svg" 
-              alt="CollageForge" 
-              style={{ 
+        {/* Logo and Title Section */}
+        <Box sx={{ mb: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+            <img
+              src="/logo-compact.svg"
+              alt="CollageForge"
+              style={{
                 height: isMobile ? '30px' : '35px',
                 width: 'auto'
               }}
             />
-            {!isMobile && (
+            <Box>
               <Typography
-                variant="h5"
+                variant={isMobile ? "h6" : "h5"}
                 component="h1"
-                sx={{ fontWeight: 'bold', color: 'text.primary' }}
+                sx={{
+                  fontWeight: 'bold',
+                  color: 'primary.main',
+                  mb: 0.5
+                }}
               >
                 Create Your Collage
               </Typography>
-            )}
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ fontSize: isMobile ? '0.75rem' : '0.875rem' }}
+              >
+                Select up to 5 images to create a custom poster
+              </Typography>
+            </Box>
           </Box>
-          {isMobile && (
-            <Typography
-              variant="h6"
-              component="h1"
-              gutterBottom
-              sx={{ fontWeight: 'bold' }}
-            >
-              Create Your Collage
-            </Typography>
-          )}
-          <Box display="flex" gap={1} flexWrap="wrap">
+
+          {/* Status Chips */}
+          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
             <Chip
               label={`${validImages.length} images discovered`}
               color="primary"
-              variant="outlined"
+              variant="filled"
               size={isMobile ? "small" : "medium"}
+              sx={{ fontWeight: 'medium' }}
             />
             {selectionMode && (
               <Chip
@@ -283,96 +295,233 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
                 color="secondary"
                 variant="filled"
                 size={isMobile ? "small" : "medium"}
+                sx={{ fontWeight: 'medium' }}
               />
             )}
-          </Box>
+          </Stack>
         </Box>
 
-        <Box display="flex" gap={1} flexDirection={isMobile ? "column" : "row"} alignItems={isMobile ? "stretch" : "center"}>
-          <Box display="flex" gap={1}>
-            <Button
-              variant={viewMode === 'grid' ? 'contained' : 'outlined'}
-              size={isMobile ? "small" : "medium"}
-              onClick={() => setViewMode('grid')}
-              disabled={isDownloading || isGeneratingCollage}
-            >
-              Grid
-            </Button>
-            <Button
-              variant={viewMode === 'carousel' ? 'contained' : 'outlined'}
-              size={isMobile ? "small" : "medium"}
-              onClick={() => setViewMode('carousel')}
-              disabled={isDownloading || isGeneratingCollage}
-            >
-              Carousel
-            </Button>
-          </Box>
-          
-          <Box display="flex" gap={1} flexWrap="wrap">
-            <Button
-              variant={selectionMode ? 'contained' : 'outlined'}
-              color="secondary"
-              startIcon={<CollageIcon />}
-              onClick={toggleSelectionMode}
-              disabled={isDownloading || isGeneratingCollage || validImages.length === 0}
-              size={isMobile ? "small" : "medium"}
-            >
-              {selectionMode ? `Selected (${selectedImages.size}/5)` : '🎨 Create Collage'}
-            </Button>
+        <Divider sx={{ mb: 3 }} />
 
-            {selectionMode && (
+        {/* Action Controls - Reorganized for better UX */}
+        <Box sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
+          gap: 2,
+          alignItems: { xs: 'stretch', md: 'center' },
+          justifyContent: 'space-between'
+        }}>
+
+          {/* Primary Actions - Left Side */}
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ flex: 1 }}>
+            {/* Collage Creation - Primary CTA */}
+            {!selectionMode ? (
               <Button
                 variant="contained"
-                color="primary"
-                onClick={handleGenerateCollage}
-                disabled={selectedImages.size === 0 || isGeneratingCollage}
-                size={isMobile ? "small" : "medium"}
+                color="secondary"
+                size={isMobile ? "medium" : "large"}
+                startIcon={<CollageIcon />}
+                onClick={toggleSelectionMode}
+                disabled={isDownloading || isGeneratingCollage || validImages.length === 0}
+                sx={{
+                  fontWeight: 'bold',
+                  px: 3,
+                  py: 1.5,
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontSize: isMobile ? '0.875rem' : '1rem'
+                }}
+                aria-label="Start creating a collage by selecting images"
               >
-                {isGeneratingCollage ? '🎨 Creating Collage...' : `✨ Create Collage (${selectedImages.size})`}
+                🎨 Create Collage
               </Button>
+            ) : (
+              <Stack direction="row" spacing={1}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  size={isMobile ? "medium" : "large"}
+                  onClick={handleGenerateCollage}
+                  disabled={selectedImages.size === 0 || isGeneratingCollage}
+                  sx={{
+                    fontWeight: 'bold',
+                    px: 3,
+                    py: 1.5,
+                    borderRadius: 2,
+                    textTransform: 'none'
+                  }}
+                  aria-label={`Generate collage with ${selectedImages.size} selected images`}
+                >
+                  {isGeneratingCollage ? '🎨 Creating...' : `✨ Generate (${selectedImages.size})`}
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  onClick={toggleSelectionMode}
+                  disabled={isGeneratingCollage}
+                  sx={{ textTransform: 'none' }}
+                  aria-label="Cancel collage creation and return to browsing"
+                >
+                  Cancel
+                </Button>
+              </Stack>
             )}
 
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<DownloadIcon />}
-              onClick={isDownloading ? handleCancelDownload : handleDownload}
-              disabled={validImages.length === 0 || selectionMode || isGeneratingCollage}
-              size={isMobile ? "small" : "medium"}
-            >
-              {isDownloading ? 'Cancel' : `Download All (${validImages.length})`}
-            </Button>
-            
-            <Button
+            {/* Download All - Secondary Action */}
+            {!selectionMode && (
+              <Button
+                variant="outlined"
+                color="primary"
+                startIcon={<DownloadIcon />}
+                onClick={isDownloading ? handleCancelDownload : handleDownload}
+                disabled={validImages.length === 0 || isGeneratingCollage}
+                size={isMobile ? "medium" : "large"}
+                sx={{
+                  textTransform: 'none',
+                  borderRadius: 2,
+                  px: 2
+                }}
+                aria-label={`Download all ${validImages.length} images as ZIP file`}
+              >
+                {isDownloading ? 'Cancel Download' : `📥 Download All (${validImages.length})`}
+              </Button>
+            )}
+          </Stack>
+
+          {/* View Controls and Navigation - Right Side */}
+          <Stack direction="row" spacing={1} alignItems="center">
+            {/* View Mode Toggle */}
+            <ButtonGroup
               variant="outlined"
+              size={isMobile ? "small" : "medium"}
+              disabled={isDownloading || isGeneratingCollage}
+              aria-label="Switch between grid and carousel view"
+            >
+              <Button
+                variant={viewMode === 'grid' ? 'contained' : 'outlined'}
+                onClick={() => setViewMode('grid')}
+                startIcon={<GridIcon />}
+                sx={{ textTransform: 'none' }}
+                aria-label="Switch to grid view"
+                aria-pressed={viewMode === 'grid'}
+              >
+                {!isMobile && 'Grid'}
+              </Button>
+              <Button
+                variant={viewMode === 'carousel' ? 'contained' : 'outlined'}
+                onClick={() => setViewMode('carousel')}
+                startIcon={<CarouselIcon />}
+                sx={{ textTransform: 'none' }}
+                aria-label="Switch to carousel view"
+                aria-pressed={viewMode === 'carousel'}
+              >
+                {!isMobile && 'Carousel'}
+              </Button>
+            </ButtonGroup>
+
+            {/* Back Navigation */}
+            <Button
+              variant="text"
               startIcon={<ArrowBackIcon />}
               onClick={onBack}
               disabled={isDownloading || isGeneratingCollage}
               size={isMobile ? "small" : "medium"}
+              sx={{
+                textTransform: 'none',
+                color: 'text.secondary',
+                '&:hover': {
+                  backgroundColor: 'action.hover'
+                }
+              }}
+              aria-label="Go back to discover new images"
             >
               {isMobile ? 'New Search' : 'Discover New Images'}
             </Button>
-          </Box>
+          </Stack>
         </Box>
-      </Box>
+      </Paper>
 
-      {/* Download Progress */}
+
+
+      {/* Download Progress - Enhanced UX */}
       {isDownloading && downloadProgress && (
-        <Box mb={3}>
-          <Alert severity="info" sx={{ mb: 2 }}>
-            <Typography variant="body2" gutterBottom>
-              {downloadProgress.message}
-            </Typography>
-            <LinearProgress 
-              variant="determinate" 
-              value={downloadProgress.percentage} 
-              sx={{ mt: 1 }}
+        <Paper
+          elevation={2}
+          sx={{
+            p: 3,
+            mb: 3,
+            borderRadius: 2,
+            background: 'linear-gradient(135deg, rgba(25, 118, 210, 0.05) 0%, rgba(21, 101, 192, 0.05) 100%)'
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+            <Box sx={{
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              background: 'primary.main',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white'
+            }}>
+              📥
+            </Box>
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                Downloading Images
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {downloadProgress.message}
+              </Typography>
+            </Box>
+          </Box>
+
+          <Box sx={{ mb: 2 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+              <Typography variant="body2" color="text.secondary">
+                Progress
+              </Typography>
+              <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                {downloadProgress.current} of {downloadProgress.total} images
+              </Typography>
+            </Box>
+            <LinearProgress
+              variant="determinate"
+              value={downloadProgress.percentage}
+              sx={{
+                height: 8,
+                borderRadius: 4,
+                backgroundColor: 'rgba(0,0,0,0.1)',
+                '& .MuiLinearProgress-bar': {
+                  borderRadius: 4
+                }
+              }}
             />
-            <Typography variant="caption" sx={{ mt: 1, display: 'block' }}>
-              {downloadProgress.current} of {downloadProgress.total} images ({downloadProgress.percentage}%)
+            <Typography
+              variant="caption"
+              sx={{
+                mt: 1,
+                display: 'block',
+                textAlign: 'center',
+                fontWeight: 'medium'
+              }}
+            >
+              {downloadProgress.percentage}% Complete
             </Typography>
-          </Alert>
-        </Box>
+          </Box>
+
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={handleCancelDownload}
+            size="small"
+            sx={{ textTransform: 'none' }}
+            aria-label="Cancel the current download"
+          >
+            Cancel Download
+          </Button>
+        </Paper>
       )}
 
       {/* Images Carousel */}
@@ -438,6 +587,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
                       }}
                     />
 
+                    {/* Selection Controls */}
                     {selectionMode && (
                       <Checkbox
                         checked={selectedImages.has(image.url)}
@@ -456,9 +606,11 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
                         icon={<CheckCircleIcon />}
                         checkedIcon={<CheckCircleIcon />}
                         onClick={(e) => e.stopPropagation()}
+                        aria-label={`${selectedImages.has(image.url) ? 'Remove' : 'Add'} image ${Array.from(selectedImages).indexOf(image.url) + 1 || selectedImages.size + 1} to collage selection`}
                       />
                     )}
 
+                    {/* Selection Number Badge */}
                     {selectedImages.has(image.url) && (
                       <Badge
                         badgeContent={Array.from(selectedImages).indexOf(image.url) + 1}
@@ -471,6 +623,9 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
                             backgroundColor: theme.palette.primary.main,
                             color: 'white',
                             fontWeight: 'bold',
+                            fontSize: '0.75rem',
+                            minWidth: '20px',
+                            height: '20px'
                           },
                         }}
                       >
@@ -534,6 +689,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
                     }}
                   />
 
+                  {/* Selection Controls */}
                   {selectionMode && (
                     <Checkbox
                       checked={selectedImages.has(image.url)}
@@ -552,9 +708,11 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
                       icon={<CheckCircleIcon />}
                       checkedIcon={<CheckCircleIcon />}
                       onClick={(e) => e.stopPropagation()}
+                      aria-label={`${selectedImages.has(image.url) ? 'Remove' : 'Add'} image ${Array.from(selectedImages).indexOf(image.url) + 1 || selectedImages.size + 1} to collage selection`}
                     />
                   )}
 
+                  {/* Selection Number Badge */}
                   {selectedImages.has(image.url) && (
                     <Badge
                       badgeContent={Array.from(selectedImages).indexOf(image.url) + 1}
@@ -567,6 +725,9 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
                           backgroundColor: theme.palette.primary.main,
                           color: 'white',
                           fontWeight: 'bold',
+                          fontSize: '0.75rem',
+                          minWidth: '20px',
+                          height: '20px'
                         },
                       }}
                     >
@@ -632,8 +793,8 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
 
               <Box
                 component="img"
-                src={selectedImage.url}
-                alt={selectedImage.alt || 'Selected image'}
+                src={selectedImage?.url}
+                alt={selectedImage?.alt || 'Selected image'}
                 sx={{
                   width: '100%',
                   height: 'auto',
@@ -652,9 +813,9 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
                     fontSize: isMobile ? '0.75rem' : '0.875rem'
                   }}
                 >
-                  Source: {selectedImage.sourceUrl}
+                  Source: {selectedImage?.sourceUrl}
                 </Typography>
-                {selectedImage.alt && (
+                {selectedImage?.alt && (
                   <Typography
                     variant="body2"
                     sx={{ fontSize: isMobile ? '0.75rem' : '0.875rem' }}
@@ -667,7 +828,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
                   <Button
                     variant="contained"
                     startIcon={<OpenInNewIcon />}
-                    onClick={() => handleOpenSource(selectedImage.sourceUrl)}
+                    onClick={() => selectedImage && handleOpenSource(selectedImage.sourceUrl)}
                     size={isMobile ? "small" : "medium"}
                     fullWidth={isMobile}
                   >
@@ -704,7 +865,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
         </Alert>
       </Snackbar>
 
-      {/* Collage Success Snackbar */}
+      {/* Collage Success Notification */}
       <Snackbar
         open={collageSuccess}
         autoHideDuration={6000}
@@ -716,7 +877,31 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
         </Alert>
       </Snackbar>
 
-      {/* Collage Error Snackbar */}
+      {/* Collage Error Notification */}
+      <Snackbar
+        open={!!collageError}
+        autoHideDuration={8000}
+        onClose={handleCloseCollageError}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseCollageError} severity="error" sx={{ width: '100%' }}>
+          Collage generation failed: {collageError}
+        </Alert>
+      </Snackbar>
+
+      {/* Collage Success Notification */}
+      <Snackbar
+        open={collageSuccess}
+        autoHideDuration={6000}
+        onClose={handleCloseCollageSuccess}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseCollageSuccess} severity="success" sx={{ width: '100%' }}>
+          🎉 Your collage is ready! Preview and order your custom print.
+        </Alert>
+      </Snackbar>
+
+      {/* Collage Error Notification */}
       <Snackbar
         open={!!collageError}
         autoHideDuration={8000}

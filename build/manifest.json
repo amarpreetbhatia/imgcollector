@@ -1,0 +1,31 @@
+{
+  "short_name": "CollageForge",
+  "name": "CollageForge - Create & Print Custom Photo Collages",
+  "description": "Transform website images into beautiful collages and order custom prints. Discover, design, and print beautiful posters in minutes.",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "apple-touch-icon.svg",
+      "sizes": "180x180",
+      "type": "image/svg+xml"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#667eea",
+  "background_color": "#1a1a1a",
+  "categories": ["photo", "productivity", "lifestyle"],
+  "screenshots": [
+    {
+      "src": "logo-full.svg",
+      "sizes": "280x80",
+      "type": "image/svg+xml",
+      "form_factor": "wide"
+    }
+  ]
+}
