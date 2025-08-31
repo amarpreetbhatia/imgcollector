@@ -1,59 +1,119 @@
-# Code Walkthrough - Image Crawler Application
+# CollageForge - Complete Code Walkthrough
 
 ## Architecture Overview
 
-This is a full-stack React + Node.js application that crawls websites to extract and display images with secure bulk download and collage creation capabilities. The application follows a client-server architecture with service worker isolation for downloads and canvas-based image processing.
+CollageForge is a comprehensive full-stack application that transforms website image discovery into a complete merchandise platform. Users can discover images from any website, create stunning collages, and order professional merchandise including t-shirts, hoodies, mugs, canvas prints, and more.
 
 ### Tech Stack
 - **Frontend**: React 18 + TypeScript + Material-UI + Vite
 - **Backend**: Node.js + Express + Cheerio + Axios
 - **Download System**: Service Worker + JSZip + Security Validation
-- **Collage System**: HTML5 Canvas + Image Processing + Print Integration
+- **Collage System**: HTML5 Canvas + Image Processing + Smart Layouts
+- **Merchandise System**: Printful API + 9 Product Categories + Real-time Mockups
 - **Testing**: Vitest + React Testing Library
 
-## Step-by-Step Code Flow
+## Complete Application Flow
 
-### Phase 1: Application Bootstrap
+### Phase 1: Discovery & Bootstrap
 1. **Entry Point** (`src/index.tsx`) → React root setup with Material-UI theme
 2. **Main App** (`src/App.tsx`) → State management and component routing
-3. **Welcome Screen** (`src/components/WelcomeScreen.tsx`) → URL input and validation
+3. **Welcome Screen** (`src/components/WelcomeScreen.tsx`) → URL input, validation, and demo showcase
+4. **Merchandise Showcase** (`src/components/MerchandiseShowcase.tsx`) → Product preview on welcome screen
 
-### Phase 2: Web Crawling Process
+### Phase 2: Web Crawling Engine
 1. **URL Submission** → Frontend validation and normalization
-2. **API Request** (`src/utils/crawler.ts`) → Backend communication
-3. **Server Processing** (`server/server.js`) → Web crawling and image extraction
-4. **Response Handling** → Image data parsing and state updates
+2. **API Request** (`src/utils/crawler.ts`) → Backend communication with progress tracking
+3. **Server Processing** (`server/server.js`) → Intelligent web crawling and image extraction
+4. **Response Handling** → Image data parsing, filtering, and state updates
 
-### Phase 3: Image Display & Interaction
-1. **Carousel Rendering** (`src/components/ImageCarousel.tsx`) → Grid/carousel view modes
-2. **Image Loading** → Error handling and responsive display
-3. **User Interactions** → Full-screen preview, source navigation
+### Phase 3: Image Management & Interaction
+1. **Carousel Rendering** (`src/components/ImageCarousel.tsx`) → Enhanced grid/carousel with selection modes
+2. **Image Loading** → Error handling, responsive display, and performance optimization
+3. **User Interactions** → Full-screen preview, source navigation, multi-select for collages
 
-### Phase 4: Advanced Features
-1. **Download System** → Service worker background processing
-2. **Collage Creation** → Multi-select and canvas generation
-3. **Print Integration** → Printful API and order management
+### Phase 4: Collage Creation System
+1. **Selection Mode** → Multi-image selection with visual feedback (max 5 images)
+2. **Canvas Generation** (`src/utils/collageService.ts`) → Smart layouts and aspect-ratio preservation
+3. **Preview Dialog** (`src/components/CollagePreviewDialog.tsx`) → Download and merchandise options
 
-## Project Structure
+### Phase 5: Comprehensive Merchandise Platform
+1. **Product Catalog** (`src/utils/printService.ts`) → 9 product categories with real Printful integration
+2. **Merchandise Selector** (`src/components/MerchandiseSelector.tsx`) → Full product configuration interface
+3. **Order Processing** → Real-time pricing, mockup generation, and order management
+
+### Phase 6: Advanced Features
+1. **Download System** → Service worker background processing with security validation
+2. **Print Integration** → Professional printing with global shipping
+3. **Security Layer** → Multi-layer validation and resource protection
+
+## Complete Project Structure
 
 ```
-├── src/                    # React frontend
-│   ├── components/         # React components
-│   │   ├── ImageCarousel.tsx    # Enhanced with download functionality
-│   │   └── WelcomeScreen.tsx    # URL input component
-│   ├── utils/             # Utility functions
-│   │   ├── crawler.ts          # Backend API communication
-│   │   ├── downloadService.ts  # Download service with worker management
-│   │   └── securityConfig.ts   # Security configuration and validation
-│   ├── styles/            # CSS styles
-│   ├── test/              # Test files
-│   └── types.ts           # TypeScript interfaces with download types
-├── server/                # Node.js backend
-│   └── server.js          # Express server with crawling logic
-└── public/                # Static assets
-    ├── download-worker.js      # Service worker for secure downloads
-    └── index.html             # Main HTML template
+├── src/                           # React frontend
+│   ├── components/                # React components
+│   │   ├── ImageCarousel.tsx           # Enhanced image display with selection modes
+│   │   ├── WelcomeScreen.tsx           # URL input with demo showcase
+│   │   ├── CollagePreviewDialog.tsx    # Collage preview with merchandise integration
+│   │   ├── MerchandiseSelector.tsx     # Complete product catalog interface
+│   │   └── MerchandiseShowcase.tsx     # Product showcase for welcome screen
+│   ├── utils/                     # Utility functions and services
+│   │   ├── crawler.ts                  # Backend API communication
+│   │   ├── downloadService.ts          # Secure download service with worker management
+│   │   ├── collageService.ts           # Canvas-based collage generation
+│   │   ├── printService.ts             # Comprehensive merchandise service (Printful API)
+│   │   └── securityConfig.ts           # Security configuration and validation
+│   ├── styles/                    # CSS styles
+│   │   └── carousel-custom.css         # Carousel-specific styling
+│   ├── test/                      # Test files
+│   ├── assets/                    # Static assets and images
+│   ├── App.tsx                    # Main application controller
+│   ├── index.tsx                  # React application entry point
+│   └── types.ts                   # Complete TypeScript interface definitions
+├── server/                        # Node.js backend
+│   ├── node_modules/               # Backend-specific dependencies
+│   ├── package.json                # Backend dependencies and scripts
+│   └── server.js                   # Express server with intelligent crawling logic
+└── public/                        # Static assets
+    ├── download-worker.js              # Service worker for secure downloads
+    ├── app-demo.gif                    # Application demo animation
+    ├── logo.svg                        # Main application logo
+    ├── logo-compact.svg                # Compact logo for headers
+    ├── demo-placeholder.svg            # Demo workflow visualization
+    ├── favicon.ico                     # Browser favicon
+    └── index.html                      # Main HTML template
 ```
+
+## Core Business Logic & Algorithms
+
+### Image Discovery Rules
+- **Time Limit**: 180 seconds (3 minutes) maximum crawl time
+- **Image Limit**: 50 images maximum per crawl session
+- **Depth Limit**: 2 levels (main page + 1 level of internal links)
+- **Domain Restriction**: Only same-domain links followed for security
+- **Robots.txt Compliance**: Respects crawl permissions and rate limits
+- **Size Filtering**: Skip images smaller than 50×50 pixels (tracking pixels)
+- **Content Filtering**: Skip analytics, tracking, and beacon images
+
+### Collage Generation Algorithms
+- **Layout Engine**: Dynamic layouts based on image count (1-5 images)
+- **Aspect Ratio Preservation**: Smart fitting with centered positioning
+- **Canvas Optimization**: 1200×800px high-resolution output
+- **Rounded Corners**: 8px radius for professional appearance
+- **Padding System**: Configurable spacing between images
+
+### Merchandise Integration Rules
+- **Product Catalog**: 9 categories with real Printful variant IDs
+- **Pricing Engine**: Real-time cost calculation with shipping
+- **Mockup Generation**: Live product previews using Printful API
+- **Order Processing**: Complete order lifecycle management
+- **Quality Assurance**: 30-day satisfaction guarantee
+
+### Security Enforcement
+- **Download Limits**: 50MB per image, 500MB total per session
+- **MIME Type Validation**: Whitelist of approved image formats
+- **Concurrency Control**: Maximum 3 simultaneous downloads
+- **Timeout Management**: 30 seconds per image download
+- **Service Worker Isolation**: Security boundary separation
 
 ## Detailed Component Architecture
 
@@ -1405,3 +1465,612 @@ fetch(url, {
 - **Graceful Degradation**: Fallback UI states for unsupported features
 - **Responsive Design**: Mobile-first with progressive enhancement
 - **Accessibility**: Proper ARIA labels and keyboard navigation
+#
+# Comprehensive Merchandise System
+
+### MerchandiseService Architecture (`src/utils/printService.ts`)
+
+**Complete Product Catalog Management:**
+```typescript
+// Real Printful product catalog with 9 categories
+const PRODUCT_CATALOG: { [key: string]: ProductCategory } = {
+  poster: {
+    id: 'poster',
+    name: 'Posters',
+    description: 'High-quality prints perfect for wall art',
+    icon: '🖼️',
+    variants: [
+      { id: 1, name: 'Small Poster', size: '12"×18"', price: 15.95 },
+      { id: 2, name: 'Medium Poster', size: '18"×24"', price: 19.95 },
+      { id: 3, name: 'Large Poster', size: '24"×36"', price: 24.95 },
+    ]
+  },
+  tshirt: {
+    id: 'tshirt',
+    name: 'T-Shirts',
+    description: 'Comfortable cotton tees with your custom design',
+    icon: '👕',
+    placement: ['front', 'back', 'both'],
+    sizeGuide: 'https://www.printful.com/size-guide/unisex-jersey-short-sleeve-tee',
+    variants: [
+      { id: 71, name: 'Unisex T-Shirt', size: 'S', color: 'White', price: 12.95 },
+      { id: 71, name: 'Unisex T-Shirt', size: 'M', color: 'White', price: 12.95 },
+      // ... more variants for different sizes and colors
+    ]
+  },
+  // ... 7 more product categories (hoodie, mug, canvas, phonecase, totebag, pillow, sticker)
+};
+```
+
+**Step-by-Step Order Processing:**
+```typescript
+class MerchandiseService {
+  async createMerchandiseOrder(imageBlob, options, customerInfo) {
+    // Phase 1: Image Upload to Printful
+    const imageUrl = await this.uploadImage(imageBlob);
+    
+    // Phase 2: Variant Selection & Validation
+    const variant = this.findVariantByOptions(options);
+    if (!variant) throw new Error('Product variant not found');
+    
+    // Phase 3: File Preparation (handles front/back placement for apparel)
+    const files = this.prepareProductFiles(imageUrl, options);
+    
+    // Phase 4: Order Data Construction
+    const orderData = {
+      recipient: customerInfo.address,
+      items: [{
+        variant_id: variant.id,
+        quantity: options.quantity,
+        files: files
+      }],
+      retail_costs: {
+        currency: 'USD',
+        subtotal: (variant.price * options.quantity).toFixed(2),
+        shipping: '0.00', // Calculated by Printful
+        tax: '0.00'
+      }
+    };
+    
+    // Phase 5: API Submission
+    const response = await fetch(`${PRINTFUL_API_BASE}/orders`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(orderData)
+    });
+    
+    // Phase 6: Response Processing
+    const result = await response.json();
+    return {
+      success: true,
+      orderId: result.result.id,
+      orderUrl: `https://www.printful.com/dashboard/orders/${result.result.id}`,
+      estimatedCost: result.result.costs.total
+    };
+  }
+}
+```
+
+**Advanced Features:**
+- **Real-time Mockup Generation**: Live product previews using Printful API
+- **Shipping Rate Calculation**: Dynamic shipping costs by location
+- **Multi-file Support**: Handle front/back designs for apparel
+- **Recommendation Engine**: Smart product suggestions based on current selection
+- **Cost Calculator**: Real-time pricing with tax and shipping estimates
+
+### MerchandiseSelector Component (`src/components/MerchandiseSelector.tsx`)
+
+**Complete Product Configuration Interface:**
+```typescript
+const MerchandiseSelector: React.FC<MerchandiseSelectorProps> = ({
+  imageBlob, imageUrl, onOrderCreate, onClose
+}) => {
+  // State Management
+  const [selectedCategory, setSelectedCategory] = useState<string>('poster');
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+  const [quantity, setQuantity] = useState<number>(1);
+  const [placement, setPlacement] = useState<string>('front');
+  const [mockupUrl, setMockupUrl] = useState<string | null>(null);
+  
+  // Real-time mockup generation
+  useEffect(() => {
+    const generateMockup = async () => {
+      if (!selectedVariant || !imageUrl) return;
+      
+      const mockupKey = await merchandiseService.getProductMockup(
+        selectedVariant.id,
+        imageUrl,
+        placement
+      );
+      if (mockupKey) {
+        setMockupUrl(`https://api.printful.com/mockup-generator/task?task_key=${mockupKey}`);
+      }
+    };
+    
+    generateMockup();
+  }, [selectedVariant, imageUrl, placement]);
+};
+```
+
+**UI Architecture:**
+- **Product Categories Grid**: Visual selection of all 9 product types
+- **Variant Configuration**: Dynamic size, color, and placement options
+- **Live Mockup Preview**: Real-time product visualization
+- **Pricing Calculator**: Instant cost calculation with shipping estimates
+- **Recommendation System**: Smart product suggestions
+- **Size Guide Integration**: Links to detailed sizing information
+
+### CollagePreviewDialog Enhancement (`src/components/CollagePreviewDialog.tsx`)
+
+**Tabbed Interface Architecture:**
+```typescript
+const CollagePreviewDialog: React.FC<CollagePreviewDialogProps> = ({
+  open, onClose, imageBlob, imageUrl
+}) => {
+  const [currentTab, setCurrentTab] = useState(0);
+  const [showMerchandiseSelector, setShowMerchandiseSelector] = useState(false);
+  
+  // Tab 0: Preview & Download
+  // Tab 1: Quick Poster Order
+  // Full Merchandise Selector: Separate modal
+  
+  return (
+    <Dialog open={open} onClose={handleClose} maxWidth="xl" fullWidth>
+      <Tabs value={currentTab} onChange={(_, newValue) => setCurrentTab(newValue)}>
+        <Tab icon={<PaletteIcon />} label="Preview & Download" />
+        <Tab icon={<PrintIcon />} label="Quick Poster Order" />
+      </Tabs>
+      
+      {/* Tab Content */}
+      {currentTab === 0 && (
+        <Grid container spacing={3}>
+          {/* Enhanced Image Preview */}
+          <Grid item xs={12} md={8}>
+            <Paper elevation={2}>
+              <img src={imageUrl} alt="Collage preview" />
+            </Paper>
+          </Grid>
+          
+          {/* Action Panel */}
+          <Grid item xs={12} md={4}>
+            <Stack spacing={3}>
+              {/* Download Options */}
+              <Paper elevation={1}>
+                <Button onClick={handleDownload} startIcon={<DownloadIcon />}>
+                  Download High-Res Image
+                </Button>
+              </Paper>
+              
+              {/* Merchandise Options */}
+              <Paper elevation={1}>
+                <Typography variant="h6">🛍️ Turn Into Merchandise</Typography>
+                <Grid container spacing={1}>
+                  {productCategories.slice(0, 6).map((category) => (
+                    <Grid item xs={4} key={category.id}>
+                      <Paper onClick={handleShowMerchandise}>
+                        <Typography variant="h6">{category.icon}</Typography>
+                        <Typography variant="caption">{category.name}</Typography>
+                      </Paper>
+                    </Grid>
+                  ))}
+                </Grid>
+                <Button onClick={handleShowMerchandise} startIcon={<ShoppingCartIcon />}>
+                  Explore All Products
+                </Button>
+              </Paper>
+            </Stack>
+          </Grid>
+        </Grid>
+      )}
+    </Dialog>
+  );
+};
+```
+
+**Enhanced Features:**
+- **Tabbed Interface**: Separate tabs for preview, download, and ordering
+- **Product Category Preview**: Visual grid of available merchandise
+- **Quick Poster Order**: Streamlined poster ordering flow
+- **Full Merchandise Access**: Complete product catalog integration
+- **Download Integration**: High-resolution image download options
+
+### Enhanced ImageCarousel (`src/components/ImageCarousel.tsx`)
+
+**Advanced Selection System:**
+```typescript
+const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
+  // Enhanced State Management
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedImages, setSelectedImages] = useState<Set<string>>(new Set());
+  const [isGeneratingCollage, setIsGeneratingCollage] = useState(false);
+  const [collagePreview, setCollagePreview] = useState<{
+    blob: Blob | null;
+    url: string | null;
+  }>({ blob: null, url: null });
+  const [showCollagePreview, setShowCollagePreview] = useState(false);
+  
+  // Selection Logic
+  const toggleImageSelection = (imageUrl: string) => {
+    setSelectedImages(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(imageUrl)) {
+        newSet.delete(imageUrl);
+      } else if (newSet.size < 5) { // Maximum 5 images for collage
+        newSet.add(imageUrl);
+      }
+      return newSet;
+    });
+  };
+  
+  // Collage Generation
+  const handleGenerateCollage = async () => {
+    if (selectedImages.size === 0) return;
+    
+    setIsGeneratingCollage(true);
+    const selectedImageData = getSelectedImageData();
+    const result = await collageService.generateCollage(selectedImageData);
+    
+    if (result.success && result.imageBlob && result.imageUrl) {
+      setCollagePreview({
+        blob: result.imageBlob,
+        url: result.imageUrl,
+      });
+      setShowCollagePreview(true);
+    }
+    setIsGeneratingCollage(false);
+  };
+};
+```
+
+**UI Enhancements:**
+- **Dual Mode Operation**: Browse mode vs. selection mode
+- **Visual Selection Feedback**: Checkboxes and numbered badges
+- **Smart Button States**: Context-aware action buttons
+- **Progress Indicators**: Real-time feedback for all operations
+- **Mobile Optimization**: Responsive design for all screen sizes
+
+## Advanced Canvas Collage System (`src/utils/collageService.ts`)
+
+### Smart Layout Engine
+
+**Dynamic Layout Calculation:**
+```typescript
+class CollageService {
+  private calculateLayout(imageCount: number, options: CollageOptions) {
+    const { width, height, padding } = options;
+    const availableWidth = width - padding * 2;
+    const availableHeight = height - padding * 2;
+
+    switch (imageCount) {
+      case 1:
+        // Full canvas utilization
+        return [{ x: padding, y: padding, width: availableWidth, height: availableHeight }];
+        
+      case 2:
+        // Horizontal split (50/50)
+        const halfWidth = (availableWidth - padding) / 2;
+        return [
+          { x: padding, y: padding, width: halfWidth, height: availableHeight },
+          { x: padding + halfWidth + padding, y: padding, width: halfWidth, height: availableHeight }
+        ];
+        
+      case 3:
+        // Horizontal thirds (33/33/33)
+        const thirdWidth = (availableWidth - padding * 2) / 3;
+        return [
+          { x: padding, y: padding, width: thirdWidth, height: availableHeight },
+          { x: padding + thirdWidth + padding, y: padding, width: thirdWidth, height: availableHeight },
+          { x: padding + (thirdWidth + padding) * 2, y: padding, width: thirdWidth, height: availableHeight }
+        ];
+        
+      case 4:
+        // 2×2 grid layout
+        const quarterWidth = (availableWidth - padding) / 2;
+        const quarterHeight = (availableHeight - padding) / 2;
+        return [
+          { x: padding, y: padding, width: quarterWidth, height: quarterHeight },
+          { x: padding + quarterWidth + padding, y: padding, width: quarterWidth, height: quarterHeight },
+          { x: padding, y: padding + quarterHeight + padding, width: quarterWidth, height: quarterHeight },
+          { x: padding + quarterWidth + padding, y: padding + quarterHeight + padding, width: quarterWidth, height: quarterHeight }
+        ];
+        
+      case 5:
+        // Complex layout: 2 top (50/50) + 3 bottom (33/33/33)
+        const topWidth = (availableWidth - padding) / 2;
+        const topHeight = (availableHeight - padding) / 2;
+        const bottomWidth = (availableWidth - padding * 2) / 3;
+        const bottomHeight = availableHeight - topHeight - padding;
+        return [
+          { x: padding, y: padding, width: topWidth, height: topHeight },
+          { x: padding + topWidth + padding, y: padding, width: topWidth, height: topHeight },
+          { x: padding, y: padding + topHeight + padding, width: bottomWidth, height: bottomHeight },
+          { x: padding + bottomWidth + padding, y: padding + topHeight + padding, width: bottomWidth, height: bottomHeight },
+          { x: padding + (bottomWidth + padding) * 2, y: padding + topHeight + padding, width: bottomWidth, height: bottomHeight }
+        ];
+    }
+  }
+}
+```
+
+**Aspect-Ratio Preserving Rendering:**
+```typescript
+private async drawImages(images: HTMLImageElement[], layout: LayoutPosition[], options: CollageOptions) {
+  for (let i = 0; i < images.length && i < layout.length; i++) {
+    const img = images[i];
+    const pos = layout[i];
+
+    // Calculate aspect ratio fitting
+    const imgAspect = img.width / img.height;
+    const boxAspect = pos.width / pos.height;
+
+    let drawWidth, drawHeight, drawX, drawY;
+
+    if (imgAspect > boxAspect) {
+      // Image is wider than box - fit to width
+      drawWidth = pos.width;
+      drawHeight = pos.width / imgAspect;
+      drawX = pos.x;
+      drawY = pos.y + (pos.height - drawHeight) / 2;
+    } else {
+      // Image is taller than box - fit to height
+      drawWidth = pos.height * imgAspect;
+      drawHeight = pos.height;
+      drawX = pos.x + (pos.width - drawWidth) / 2;
+      drawY = pos.y;
+    }
+
+    // Draw with rounded corners for professional appearance
+    this.drawRoundedImage(img, drawX, drawY, drawWidth, drawHeight, 8);
+  }
+}
+
+private drawRoundedImage(img: HTMLImageElement, x: number, y: number, width: number, height: number, radius: number) {
+  this.ctx.save();
+  this.ctx.beginPath();
+  this.ctx.roundRect(x, y, width, height, radius);
+  this.ctx.clip();
+  this.ctx.drawImage(img, x, y, width, height);
+  this.ctx.restore();
+}
+```
+
+**Canvas Pipeline:**
+1. **Initialization**: Create 1200×800px canvas with 2D context
+2. **Background Fill**: Apply configurable background color
+3. **Image Loading**: Load all selected images with CORS support
+4. **Layout Calculation**: Dynamic positioning based on image count
+5. **Aspect Preservation**: Smart fitting within layout bounds
+6. **Rounded Rendering**: Professional appearance with 8px radius
+7. **Export**: High-quality PNG blob generation
+
+## Enhanced Type System (`src/types.ts`)
+
+### Complete Interface Definitions
+
+```typescript
+// Core Image Data
+interface ImageData {
+  url: string;        // Absolute image URL
+  sourceUrl: string;  // Page where image was found
+  alt?: string;       // Alt text from img tag
+}
+
+// Crawling Results
+interface CrawlResult {
+  images: ImageData[];
+  error?: string;     // Error message if crawl failed
+}
+
+// Download System Types
+interface DownloadProgress {
+  current: number;    // Current download count
+  total: number;      // Total images to download
+  percentage: number; // Completion percentage (0-100)
+  message: string;    // Status message for UI display
+}
+
+interface DownloadResult {
+  success: boolean;
+  zipBlob?: Blob;     // Generated ZIP file
+  downloadedCount?: number;
+  totalCount?: number;
+  error?: string;
+}
+
+// Collage System Types
+interface CollageOptions {
+  width: number;      // Canvas width in pixels (default: 1200)
+  height: number;     // Canvas height in pixels (default: 800)
+  layout: 'grid' | 'mosaic';  // Layout algorithm type
+  backgroundColor: string;     // Background color (hex format)
+  padding: number;    // Padding between images in pixels
+}
+
+interface CollageResult {
+  success: boolean;
+  imageBlob?: Blob;   // Generated collage PNG
+  imageUrl?: string;  // Object URL for preview
+  error?: string;     // Error message if generation failed
+}
+
+// Merchandise System Types
+interface ProductCategory {
+  id: string;         // Unique product identifier
+  name: string;       // Display name (e.g., "T-Shirts")
+  description: string; // Product description
+  icon: string;       // Emoji icon for UI
+  variants: ProductVariant[]; // Available product variants
+  placement?: ('front' | 'back' | 'both')[]; // For apparel
+  sizeGuide?: string; // URL to size guide
+}
+
+interface ProductVariant {
+  id: number;         // Printful variant ID
+  name: string;       // Variant display name
+  size: string;       // Size specification
+  color?: string;     // Color option (for apparel)
+  price: number;      // Base price in USD
+}
+
+interface PrintOptions {
+  productType: 'poster' | 'tshirt' | 'hoodie' | 'mug' | 'canvas' | 'phonecase' | 'totebag' | 'pillow' | 'sticker';
+  size: string;       // Size specification
+  color?: string;     // Color option (for apparel)
+  material?: string;  // Material type (matte, glossy, cotton, etc.)
+  quantity: number;   // Order quantity
+  placement?: 'front' | 'back' | 'both'; // Design placement (for apparel)
+}
+
+interface PrintOrderResult {
+  success: boolean;
+  orderId?: string;   // Printful order ID
+  orderUrl?: string;  // Order management URL
+  estimatedCost?: number; // Total cost estimate
+  error?: string;     // Error message if order failed
+}
+
+// Security Configuration
+interface SecurityConfig {
+  maxFileSize: number;        // Maximum file size per image (bytes)
+  maxTotalSize: number;       // Maximum total download size (bytes)
+  maxConcurrentDownloads: number; // Maximum simultaneous downloads
+  allowedMimeTypes: string[]; // Whitelist of allowed MIME types
+  downloadTimeout: number;    // Timeout per image download (ms)
+  validProtocols: string[];   // Allowed URL protocols
+}
+```
+
+## Data Flow Patterns
+
+### State Management Architecture
+
+**App-Level State Flow:**
+```
+App.tsx (Central State)
+├── images: ImageData[]           # Crawled image collection
+├── isLoading: boolean           # Crawl progress state
+├── showCarousel: boolean        # View state toggle
+└── error: string | null         # Error state management
+
+WelcomeScreen → App → ImageCarousel
+     ↓           ↓         ↓
+URL Input → State Update → Image Display
+     ↓           ↓         ↓
+Crawl API → Loading State → Results View
+```
+
+**Component Communication Patterns:**
+```
+Parent → Child: Props-based data flow
+Child → Parent: Callback functions
+Service → Component: Promise-based async operations
+Worker → Service: Message-based communication
+```
+
+### API Communication Flow
+
+**Frontend ↔ Backend:**
+```typescript
+// Frontend Request (src/utils/crawler.ts)
+const response = await fetch(`${API_BASE}/api/crawl`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ url: normalizedUrl })
+});
+
+// Backend Processing (server/server.js)
+app.post('/api/crawl', async (req, res) => {
+  try {
+    const { url } = req.body;
+    const crawler = new ImageCrawler();
+    const result = await crawler.crawlImages(url);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+```
+
+**Service Worker Communication:**
+```typescript
+// Main Thread → Service Worker
+downloadService.worker.postMessage({
+  type: 'DOWNLOAD_IMAGES',
+  requestId: uniqueId,
+  data: { images: selectedImages }
+});
+
+// Service Worker → Main Thread
+self.postMessage({
+  type: 'DOWNLOAD_PROGRESS',
+  requestId: requestId,
+  data: { current: 5, total: 10, percentage: 50, message: 'Downloaded 5/10 images' }
+});
+```
+
+### Error Handling Patterns
+
+**Hierarchical Error Management:**
+```typescript
+// Component Level
+try {
+  const result = await crawlerService.crawlImages(url);
+  setImages(result.images);
+} catch (error) {
+  setError(error.message);
+  // Graceful degradation
+}
+
+// Service Level
+async crawlImages(url: string): Promise<CrawlResult> {
+  try {
+    const response = await fetch(apiUrl);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    return await response.json();
+  } catch (error) {
+    return { images: [], error: error.message };
+  }
+}
+
+// Worker Level
+self.addEventListener('error', (event) => {
+  self.postMessage({
+    type: 'DOWNLOAD_ERROR',
+    requestId: currentRequestId,
+    data: { error: event.error.message }
+  });
+});
+```
+
+## Performance Optimization Strategies
+
+### Image Loading Optimization
+- **Lazy Loading**: Images load as they enter viewport
+- **Error Boundaries**: Failed images don't break the interface
+- **Progressive Enhancement**: Graceful degradation for slow connections
+- **Memory Management**: Proper cleanup of object URLs and canvas contexts
+
+### Canvas Performance
+- **Efficient Rendering**: Single-pass drawing with optimized operations
+- **Memory Management**: Proper canvas cleanup and garbage collection
+- **Async Processing**: Non-blocking image loading and processing
+- **Quality Balance**: Optimal resolution vs. performance trade-offs
+
+### Service Worker Efficiency
+- **Concurrent Downloads**: Controlled parallelism (max 3 simultaneous)
+- **Resource Limits**: Strict enforcement of size and time limits
+- **Progress Streaming**: Real-time progress updates without blocking
+- **Error Isolation**: Individual download failures don't affect others
+
+### Bundle Optimization
+- **Code Splitting**: Lazy loading of heavy components
+- **Tree Shaking**: Elimination of unused code
+- **Asset Optimization**: Compressed images and optimized fonts
+- **Caching Strategy**: Efficient browser caching for static assets
+
+This comprehensive walkthrough provides developers with a complete understanding of CollageForge's architecture, from basic image discovery to advanced merchandise integration. The system demonstrates modern React patterns, secure service worker implementation, canvas-based image processing, and real-world API integration with Printful's printing services.

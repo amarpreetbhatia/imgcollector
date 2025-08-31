@@ -10,10 +10,12 @@ import {
   useTheme,
   useMediaQuery,
   CircularProgress,
+  Grid,
 } from '@mui/material';
 import { Search as SearchIcon } from '@mui/icons-material';
 import { imageCrawler } from '../utils/crawler';
 import { ImageData } from '../types';
+// import MerchandiseShowcase from './MerchandiseShowcase'; // Hidden
 
 interface WelcomeScreenProps {
   onCrawlComplete: (images: ImageData[]) => void;
@@ -64,7 +66,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
 
     try {
       const result = await imageCrawler.crawl(url.trim());
-      
+
       clearInterval(progressInterval);
       setProgress(100);
 
@@ -116,28 +118,28 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         }}
       >
         <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
-          <img 
-            src="/logo.svg" 
-            alt="CollageForge Logo" 
-            style={{ 
+          <img
+            src="/logo.svg"
+            alt="CollageForge Logo"
+            style={{
               height: isMobile ? '50px' : '60px',
               width: 'auto'
             }}
           />
         </Box>
-        
-        <Typography 
-          variant={isMobile ? "body1" : "h6"} 
-          color="text.secondary" 
+
+        <Typography
+          variant={isMobile ? "body1" : "h6"}
+          color="text.secondary"
           paragraph
           sx={{ fontWeight: 500 }}
         >
           Create stunning photo collages and order custom prints
         </Typography>
 
-        <Typography 
-          variant="body2" 
-          color="text.secondary" 
+        <Typography
+          variant="body2"
+          color="text.secondary"
           paragraph
           sx={{ mb: 3, fontStyle: 'italic' }}
         >
@@ -160,10 +162,10 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
 
           {isLoading && (
             <Box sx={{ mb: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-              <CircularProgress 
+              <CircularProgress
                 size={isMobile ? 60 : 80}
                 thickness={4}
-                sx={{ 
+                sx={{
                   color: 'primary.main',
                   animationDuration: '550ms',
                 }}
@@ -181,7 +183,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             startIcon={!isLoading && <SearchIcon />}
             onClick={handleCrawl}
             disabled={isLoading}
-            sx={{ 
+            sx={{
               minWidth: isMobile ? 150 : 200,
               fontSize: isMobile ? '0.875rem' : '1rem'
             }}
@@ -190,22 +192,153 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
           </Button>
         </Box>
 
-        <Alert severity="info" sx={{ textAlign: 'left' }}>
-          <Typography variant="body2">
-            <strong>How it works:</strong>
-            <br />
-            • 🔍 Discover images from any website (up to 50 images)
-            <br />
-            • 🎨 Select up to 5 images to create your custom collage
-            <br />
-            • 🖼️ Preview your collage with smart auto-layouts
-            <br />
-            • 🖨️ Order professional prints (12"×18" to 24"×36")
-            <br />
-            • 📦 Get your custom poster delivered to your door
+        {/* How it Works - Enhanced with Demo */}
+        <Box sx={{ mt: 3 }}>
+          <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, textAlign: 'center' }}>
+            ✨ See How It Works
           </Typography>
-        </Alert>
+
+          {/* Demo GIF Section */}
+          <Paper
+            elevation={2}
+            sx={{
+              p: 2,
+              mb: 3,
+              borderRadius: 2,
+              background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%)'
+            }}
+          >
+            <Box
+              sx={{
+                width: '100%',
+                height: isMobile ? 200 : 300,
+                borderRadius: 2,
+                overflow: 'hidden',
+                position: 'relative',
+                backgroundColor: 'grey.100',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: '2px dashed',
+                borderColor: 'primary.light'
+              }}
+            >
+              {/* Demo Workflow Visualization */}
+              <img
+                src="/app-demo.gif"
+                alt="CollageForge Workflow - From Discovery to Delivery"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain',
+                  borderRadius: '8px'
+                }}
+              />
+
+              {/* When you have the actual animated GIF, replace the above with: */}
+              {/* 
+              <img 
+                src="/app-demo.gif" 
+                alt="CollageForge Demo - From Discovery to Delivery"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  borderRadius: '8px'
+                }}
+              />
+              */}
+            </Box>
+
+            <Typography
+              variant="caption"
+              sx={{
+                display: 'block',
+                textAlign: 'center',
+                mt: 1,
+                fontStyle: 'italic',
+                color: 'text.secondary'
+              }}
+            >
+              🎥 Complete workflow: URL → Images → Collage → Products → Order
+            </Typography>
+          </Paper>
+
+          <Alert severity="info" sx={{ textAlign: 'left' }}>
+            <Typography variant="body2">
+              <strong>Simple 5-Step Process:</strong>
+              <br />
+              • 🔍 <strong>Discover:</strong> Enter any website URL to find images
+              <br />
+              • 🎨 <strong>Select:</strong> Choose up to 5 images for your collage
+              <br />
+              • 🖼️ <strong>Create:</strong> Auto-generate beautiful collage layouts
+              <br />
+              • 🛍️ <strong>Customize:</strong> Pick from posters, t-shirts, mugs & more
+              <br />
+              • 📦 <strong>Order:</strong> Get professional merchandise delivered worldwide
+            </Typography>
+          </Alert>
+        </Box>
       </Paper>
+
+      {/* Feature Highlights */}
+      {!isLoading && (
+        <Box sx={{ mt: 4, width: '100%', maxWidth: 1000 }}>
+          <Paper elevation={1} sx={{ p: 3, borderRadius: 2, mb: 4 }}>
+            <Typography variant="h5" sx={{ fontWeight: 'bold', textAlign: 'center', mb: 3 }}>
+              🚀 Why Choose CollageForge?
+            </Typography>
+
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={4}>
+                <Box sx={{ textAlign: 'center', p: 2 }}>
+                  <Typography variant="h2" sx={{ mb: 1 }}>🔍</Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
+                    Smart Discovery
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Find up to 50 high-quality images from any website with our intelligent crawler
+                  </Typography>
+                </Box>
+              </Grid>
+
+              <Grid item xs={12} md={4}>
+                <Box sx={{ textAlign: 'center', p: 2 }}>
+                  <Typography variant="h2" sx={{ mb: 1 }}>🎨</Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
+                    Auto Layouts
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Create stunning collages with smart auto-layouts optimized for printing
+                  </Typography>
+                </Box>
+              </Grid>
+
+              <Grid item xs={12} md={4}>
+                <Box sx={{ textAlign: 'center', p: 2 }}>
+                  <Typography variant="h2" sx={{ mb: 1 }}>🛍️</Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
+                    9 Products
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Transform into posters, t-shirts, mugs, phone cases, and more premium products
+                  </Typography>
+                </Box>
+              </Grid>
+            </Grid>
+          </Paper>
+        </Box>
+      )}
+
+      {/* Merchandise Showcase - Hidden */}
+      {/* 
+      {!isLoading && (
+        <Box sx={{ mt: 2, width: '100%', maxWidth: 1200 }}>
+          <MerchandiseShowcase onExplore={() => {}} />
+        </Box>
+      )}
+      */}
     </Box>
   );
 };

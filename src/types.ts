@@ -44,9 +44,31 @@ export interface CollageResult {
 }
 
 export interface PrintOptions {
-  size: 'small' | 'medium' | 'large'; // 12x18, 18x24, 24x36
-  paperType: 'matte' | 'glossy';
+  productType: 'poster' | 'tshirt' | 'hoodie' | 'mug' | 'canvas' | 'phonecase' | 'totebag' | 'pillow' | 'sticker';
+  size: string; // Dynamic based on product type
+  color?: string; // For apparel
+  material?: string; // matte, glossy, cotton, etc.
   quantity: number;
+  placement?: 'front' | 'back' | 'both'; // For apparel
+}
+
+export interface ProductVariant {
+  id: number;
+  name: string;
+  size: string;
+  color?: string;
+  price: number;
+  image?: string;
+}
+
+export interface ProductCategory {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  variants: ProductVariant[];
+  placement?: ('front' | 'back' | 'both')[];
+  sizeGuide?: string;
 }
 
 export interface PrintOrderResult {
