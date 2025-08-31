@@ -11,8 +11,13 @@ import {
   useMediaQuery,
   CircularProgress,
   Grid,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
 } from '@mui/material';
-import { Search as SearchIcon } from '@mui/icons-material';
+import { Search as SearchIcon, Close as CloseIcon, PlayCircleOutline as PlayIcon } from '@mui/icons-material';
 import { imageCrawler } from '../utils/crawler';
 import { ImageData } from '../types';
 // import MerchandiseShowcase from './MerchandiseShowcase'; // Hidden
@@ -31,6 +36,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   const [url, setUrl] = useState('');
   const [error, setError] = useState('');
   const [progress, setProgress] = useState(0);
+  const [demoModalOpen, setDemoModalOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -192,93 +198,37 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
           </Button>
         </Box>
 
-        {/* How it Works - Enhanced with Demo */}
+        {/* How it Works - Clickable */}
         <Box sx={{ mt: 3 }}>
-          <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, textAlign: 'center' }}>
-            ✨ See How It Works
-          </Typography>
-
-          {/* Demo GIF Section */}
-          <Paper
-            elevation={2}
+          <Button
+            variant="outlined"
+            startIcon={<PlayIcon />}
+            onClick={() => setDemoModalOpen(true)}
             sx={{
-              p: 2,
-              mb: 3,
               borderRadius: 2,
-              background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%)'
+              textTransform: 'none',
+              fontSize: '1rem',
+              fontWeight: 'bold',
+              py: 1.5,
+              px: 3,
+              borderColor: 'primary.main',
+              color: 'primary.main',
+              '&:hover': {
+                backgroundColor: 'primary.main',
+                color: 'white',
+              }
             }}
           >
-            <Box
-              sx={{
-                width: '100%',
-                height: isMobile ? 200 : 300,
-                borderRadius: 2,
-                overflow: 'hidden',
-                position: 'relative',
-                backgroundColor: 'grey.100',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: '2px dashed',
-                borderColor: 'primary.light'
-              }}
-            >
-              {/* Demo Workflow Visualization */}
-              <img
-                src="/app-demo.gif"
-                alt="CollageForge Workflow - From Discovery to Delivery"
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'contain',
-                  borderRadius: '8px'
-                }}
-              />
+            ✨ See How It Works
+          </Button>
 
-              {/* When you have the actual animated GIF, replace the above with: */}
-              {/* 
-              <img 
-                src="/app-demo.gif" 
-                alt="CollageForge Demo - From Discovery to Delivery"
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  borderRadius: '8px'
-                }}
-              />
-              */}
-            </Box>
-
-            <Typography
-              variant="caption"
-              sx={{
-                display: 'block',
-                textAlign: 'center',
-                mt: 1,
-                fontStyle: 'italic',
-                color: 'text.secondary'
-              }}
-            >
-              🎥 Complete workflow: URL → Images → Collage → Products → Order
-            </Typography>
-          </Paper>
-
-          <Alert severity="info" sx={{ textAlign: 'left' }}>
-            <Typography variant="body2">
-              <strong>Simple 5-Step Process:</strong>
-              <br />
-              • 🔍 <strong>Discover:</strong> Enter any website URL to find images
-              <br />
-              • 🎨 <strong>Select:</strong> Choose up to 5 images for your collage
-              <br />
-              • 🖼️ <strong>Create:</strong> Auto-generate beautiful collage layouts
-              <br />
-              • 🛍️ <strong>Customize:</strong> Pick from posters, t-shirts, mugs & more
-              <br />
-              • 📦 <strong>Order:</strong> Get professional merchandise delivered worldwide
-            </Typography>
-          </Alert>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ mt: 1, fontStyle: 'italic' }}
+          >
+            Watch our 5-step process in action
+          </Typography>
         </Box>
       </Paper>
 
@@ -339,6 +289,108 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         </Box>
       )}
       */}
+
+      {/* Demo Modal */}
+      <Dialog
+        open={demoModalOpen}
+        onClose={() => setDemoModalOpen(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 2,
+            maxHeight: '90vh'
+          }
+        }}
+      >
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+            ✨ How CollageForge Works
+          </Typography>
+          <IconButton onClick={() => setDemoModalOpen(false)} size="small">
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+
+        <DialogContent sx={{ pb: 2 }}>
+          {/* Demo GIF Section */}
+          <Paper
+            elevation={2}
+            sx={{
+              p: 2,
+              mb: 3,
+              borderRadius: 2,
+              background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%)'
+            }}
+          >
+            <Box
+              sx={{
+                width: '100%',
+                height: isMobile ? 250 : 400,
+                borderRadius: 2,
+                overflow: 'hidden',
+                position: 'relative',
+                backgroundColor: 'grey.100',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: '2px dashed',
+                borderColor: 'primary.light'
+              }}
+            >
+              <img
+                src="/app-demo.gif"
+                alt="CollageForge Workflow - From Discovery to Delivery"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain',
+                  borderRadius: '8px'
+                }}
+              />
+            </Box>
+
+            <Typography
+              variant="caption"
+              sx={{
+                display: 'block',
+                textAlign: 'center',
+                mt: 1,
+                fontStyle: 'italic',
+                color: 'text.secondary'
+              }}
+            >
+              🎥 Complete workflow: URL → Images → Collage → Products → Order
+            </Typography>
+          </Paper>
+
+          <Alert severity="info" sx={{ textAlign: 'left' }}>
+            <Typography variant="body2">
+              <strong>Simple 5-Step Process:</strong>
+              <br />
+              • 🔍 <strong>Discover:</strong> Enter any website URL to find images
+              <br />
+              • 🎨 <strong>Select:</strong> Choose up to 5 images for your collage
+              <br />
+              • 🖼️ <strong>Create:</strong> Auto-generate beautiful collage layouts
+              <br />
+              • 🛍️ <strong>Customize:</strong> Pick from posters, t-shirts, mugs & more
+              <br />
+              • 📦 <strong>Order:</strong> Get professional merchandise delivered worldwide
+            </Typography>
+          </Alert>
+        </DialogContent>
+
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            onClick={() => setDemoModalOpen(false)}
+            variant="contained"
+            sx={{ borderRadius: 2 }}
+          >
+            Got It!
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
