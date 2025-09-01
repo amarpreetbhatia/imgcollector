@@ -1,523 +1,248 @@
-# CollageForge - Complete Code Walkthrough
+# CollageForge - Technical Code Walkthrough
 
-## Architecture Overview
+## 🏗️ Architecture Overview
 
-CollageForge is a comprehensive full-stack application that transforms website image discovery into a complete merchandise platform. Users can discover images from any website, create stunning collages, and order professional merchandise including t-shirts, hoodies, mugs, canvas prints, and more.
+CollageForge is a modern full-stack React application that transforms website image discovery into a complete merchandise platform. This walkthrough provides developers with a comprehensive understanding of the codebase structure, data flow patterns, and key implementation details.
 
 ### Tech Stack
 - **Frontend**: React 18 + TypeScript + Material-UI + Vite
 - **Backend**: Node.js + Express + Cheerio + Axios
-- **Download System**: Service Worker + JSZip + Security Validation
-- **Collage System**: HTML5 Canvas + Image Processing + Smart Layouts
-- **Merchandise System**: Printful API + 9 Product Categories + Real-time Mockups
-- **Testing**: Vitest + React Testing Library
+- **Canvas Processing**: HTML5 Canvas API + Image manipulation
+- **Service Architecture**: Clean Architecture with SOLID principles
+- **Security**: Multi-layer validation + Service Worker isolation
 
-## Complete Application Flow
-
-### Phase 1: Discovery & Bootstrap
-1. **Entry Point** (`src/index.tsx`) → React root setup with Material-UI theme
-2. **Main App** (`src/App.tsx`) → State management and component routing
-3. **Welcome Screen** (`src/components/WelcomeScreen.tsx`) → URL input, validation, and demo showcase
-4. **Merchandise Showcase** (`src/components/MerchandiseShowcase.tsx`) → Product preview on welcome screen
-
-### Phase 2: Web Crawling Engine
-1. **URL Submission** → Frontend validation and normalization
-2. **API Request** (`src/utils/crawler.ts`) → Backend communication with progress tracking
-3. **Server Processing** (`server/server.js`) → Intelligent web crawling and image extraction
-4. **Response Handling** → Image data parsing, filtering, and state updates
-
-### Phase 3: Image Management & Interaction
-1. **Carousel Rendering** (`src/components/ImageCarousel.tsx`) → Enhanced grid/carousel with selection modes
-2. **Image Loading** → Error handling, responsive display, and performance optimization
-3. **User Interactions** → Full-screen preview, source navigation, multi-select for collages
-
-### Phase 4: Collage Creation System
-1. **Selection Mode** → Multi-image selection with visual feedback (max 5 images)
-2. **Canvas Generation** (`src/utils/collageService.ts`) → Smart layouts and aspect-ratio preservation
-3. **Preview Dialog** (`src/components/CollagePreviewDialog.tsx`) → Download and merchandise options
-
-### Phase 5: Comprehensive Merchandise Platform
-1. **Product Catalog** (`src/utils/printService.ts`) → 9 product categories with real Printful integration
-2. **Merchandise Selector** (`src/components/MerchandiseSelector.tsx`) → Full product configuration interface
-3. **Order Processing** → Real-time pricing, mockup generation, and order management
-
-### Phase 6: Advanced Features
-1. **Download System** → Service worker background processing with security validation
-2. **Print Integration** → Professional printing with global shipping
-3. **Security Layer** → Multi-layer validation and resource protection
-
-## Complete Project Structure
+## 📁 Project Structure & Component Hierarchy
 
 ```
-├── src/                           # React frontend
-│   ├── components/                # React components
-│   │   ├── ImageCarousel.tsx           # Enhanced image display with selection modes
-│   │   ├── WelcomeScreen.tsx           # URL input with demo showcase
-│   │   ├── CollagePreviewDialog.tsx    # Collage preview with merchandise integration
-│   │   ├── MerchandiseSelector.tsx     # Complete product catalog interface
-│   │   └── MerchandiseShowcase.tsx     # Product showcase for welcome screen
-│   ├── utils/                     # Utility functions and services
-│   │   ├── crawler.ts                  # Backend API communication
-│   │   ├── downloadService.ts          # Secure download service with worker management
-│   │   ├── collageService.ts           # Canvas-based collage generation
-│   │   ├── printService.ts             # Comprehensive merchandise service (Printful API)
-│   │   └── securityConfig.ts           # Security configuration and validation
-│   ├── styles/                    # CSS styles
-│   │   └── carousel-custom.css         # Carousel-specific styling
-│   ├── test/                      # Test files
-│   ├── assets/                    # Static assets and images
-│   ├── App.tsx                    # Main application controller
-│   ├── index.tsx                  # React application entry point
-│   └── types.ts                   # Complete TypeScript interface definitions
-├── server/                        # Node.js backend
-│   ├── node_modules/               # Backend-specific dependencies
-│   ├── package.json                # Backend dependencies and scripts
-│   └── server.js                   # Express server with intelligent crawling logic
-└── public/                        # Static assets
-    ├── download-worker.js              # Service worker for secure downloads
-    ├── app-demo.gif                    # Application demo animation
-    ├── logo.svg                        # Main application logo
-    ├── logo-compact.svg                # Compact logo for headers
-    ├── demo-placeholder.svg            # Demo workflow visualization
-    ├── favicon.ico                     # Browser favicon
-    └── index.html                      # Main HTML template
+src/
+├── components/                 # React UI Components
+│   ├── ImageCarousel.tsx      # Main image display with multi-mode interactions
+│   ├── WelcomeScreen.tsx      # URL input and crawl initiation
+│   ├── CollagePreviewDialog.tsx # Collage preview with merchandise integration
+│   ├── MerchandiseSelector.tsx  # Complete product catalog interface
+│   └── MerchandiseShowcase.tsx  # Product showcase for welcome screen
+├── services/                   # Clean Architecture Service Layer
+│   ├── interfaces/            # Service contracts (Dependency Inversion)
+│   ├── implementations/       # Concrete service implementations
+│   ├── ServiceFactory.ts      # Dependency injection container
+│   └── ServiceInitializer.ts  # Service configuration
+├── adapters/                   # Legacy compatibility layer
+├── contracts/                  # API contracts (Frontend ↔ Backend)
+├── utils/                      # Legacy utilities (backward compatibility)
+├── types.ts                    # TypeScript interface definitions
+└── App.tsx                     # Main application state controller
 ```
 
-## Core Business Logic & Algorithms
+## 🔄 Data Flow Architecture
+
+### Primary Data Flow Pattern
+```
+User Input → State Management → API Communication → Backend Processing → Response Handling → UI Updates
+```
+
+### Component Communication Pattern
+```
+App (Central State)
+├── WelcomeScreen → triggers crawl → updates App state
+└── ImageCarousel → receives images → manages local interactions
+    ├── Download System → Service Worker → ZIP creation
+    ├── Collage System → Canvas API → Blob generation
+    └── Merchandise System → Printful API → Order processing
+```
+
+## 🎯 Core Business Logic & Algorithms
 
 ### Image Discovery Rules
-- **Time Limit**: 180 seconds (3 minutes) maximum crawl time
-- **Image Limit**: 50 images maximum per crawl session
-- **Depth Limit**: 2 levels (main page + 1 level of internal links)
-- **Domain Restriction**: Only same-domain links followed for security
-- **Robots.txt Compliance**: Respects crawl permissions and rate limits
-- **Size Filtering**: Skip images smaller than 50×50 pixels (tracking pixels)
-- **Content Filtering**: Skip analytics, tracking, and beacon images
+- **Time Limit**: 180 seconds maximum crawl time
+- **Image Limit**: 50 images maximum per session
+- **Depth Limit**: 2 levels (main page + internal links)
+- **Domain Restriction**: Same-domain only for security
+- **Size Filtering**: Skip images < 50×50px (tracking pixels)
+- **Content Filtering**: Skip analytics/tracking images
 
-### Collage Generation Algorithms
-- **Layout Engine**: Dynamic layouts based on image count (1-5 images)
+### Collage Generation Algorithm
+- **Layout Engine**: Dynamic layouts based on image count (1-5)
 - **Aspect Ratio Preservation**: Smart fitting with centered positioning
 - **Canvas Optimization**: 1200×800px high-resolution output
-- **Rounded Corners**: 8px radius for professional appearance
-- **Padding System**: Configurable spacing between images
-
-### Merchandise Integration Rules
-- **Product Catalog**: 9 categories with real Printful variant IDs
-- **Pricing Engine**: Real-time cost calculation with shipping
-- **Mockup Generation**: Live product previews using Printful API
-- **Order Processing**: Complete order lifecycle management
-- **Quality Assurance**: 30-day satisfaction guarantee
+- **Rendering Pipeline**: Background → Images → Text → Export
 
 ### Security Enforcement
-- **Download Limits**: 50MB per image, 500MB total per session
-- **MIME Type Validation**: Whitelist of approved image formats
-- **Concurrency Control**: Maximum 3 simultaneous downloads
-- **Timeout Management**: 30 seconds per image download
+- **Download Limits**: 50MB per image, 500MB total
+- **MIME Validation**: Whitelist of approved formats
+- **Concurrency Control**: Max 3 simultaneous downloads
 - **Service Worker Isolation**: Security boundary separation
 
-## Detailed Component Architecture
+## 🧩 Component Deep Dive
 
-### 1. Application Bootstrap (`src/index.tsx`)
-**Purpose**: Application initialization and theme setup
-**Key Operations:**
-- React 18 root creation with `createRoot()`
-- Material-UI theme provider with dark theme
-- Global CSS baseline and typography setup
-- Error boundary setup for graceful failure handling
+### 1. Application Bootstrap (`src/index.tsx` → `src/App.tsx`)
 
-### 2. Main Application Controller (`src/App.tsx`)
-**Purpose**: Central state management and routing logic
-**State Management:**
+**Entry Point Pattern:**
 ```typescript
-const [images, setImages] = useState<ImageData[]>([]);     // Crawled image data
-const [isLoading, setIsLoading] = useState(false);         // Crawl progress state
-const [showCarousel, setShowCarousel] = useState(false);   // View state toggle
+// index.tsx - React 18 initialization
+const root = createRoot(document.getElementById('root')!);
+root.render(<App />);
+
+// App.tsx - Central state management
+const [images, setImages] = useState<ImageData[]>([]);
+const [isLoading, setIsLoading] = useState(false);
+const [showCarousel, setShowCarousel] = useState(false);
 ```
 
-**Component Flow:**
+**State Transition Logic:**
 ```
-App (State Controller)
-├── WelcomeScreen (URL Input) → triggers crawl
-└── ImageCarousel (Image Display) → shows results
+Welcome Screen → Loading State → Results Display → Back to Welcome
 ```
 
-**Key Algorithms:**
-- **State Transitions**: Welcome → Loading → Results → Back to Welcome
-- **Error Recovery**: Reset state on crawl failures
-- **Data Persistence**: Maintain image data until new crawl initiated
+### 2. URL Input & Crawl System (`src/components/WelcomeScreen.tsx`)
 
-### 3. URL Input & Crawl Initiation (`src/components/WelcomeScreen.tsx`)
-**Purpose**: User input handling and crawl process initiation
-**Step-by-Step Process:**
-1. **URL Input Validation**
-   ```typescript
-   const normalizeUrl = (url: string): string => {
-     if (!url.startsWith('http://') && !url.startsWith('https://')) {
-       return `https://${url}`;
-     }
-     return url;
-   };
-   ```
-2. **Progress Simulation Algorithm**
-   ```typescript
-   // Simulated progress: 0-90% during crawl, 100% on completion
-   const updateProgress = () => {
-     setProgress(prev => Math.min(prev + Math.random() * 15, 90));
-   };
-   ```
-3. **API Communication**
-   - Calls `crawler.crawlImages(url)` from utils
-   - Handles loading states and error conditions
-   - Triggers parent state updates on success
-
-**Error Handling Strategy:**
-- Network failures → User-friendly error messages
-- Invalid URLs → Automatic normalization attempts
-- Server errors → Detailed error display with retry options
-
-### 4. Image Display & Interaction Hub (`src/components/ImageCarousel.tsx`)
-**Purpose**: Multi-modal image display with advanced interaction features
-**Core State Architecture:**
+**URL Validation Algorithm:**
 ```typescript
-// Display Management
-const [selectedImage, setSelectedImage] = useState<ImageData | null>(null);
-const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
+const validateUrl = (inputUrl: string): boolean => {
+  try {
+    const normalizedUrl = inputUrl.startsWith('http') ? inputUrl : `https://${inputUrl}`;
+    new URL(normalizedUrl);
+    return true;
+  } catch {
+    return false;
+  }
+};
+```
+
+**Progress Simulation Pattern:**
+```typescript
+// Simulated progress: 0-90% during crawl, 100% on completion
+const progressInterval = setInterval(() => {
+  setProgress((prev) => Math.min(prev + Math.random() * 15, 90));
+}, 500);
+```
+
+**API Communication Flow:**
+```typescript
+const result = await imageCrawler.crawl(url.trim());
+if (result.error) {
+  setError(result.error);
+} else {
+  onCrawlComplete(result.images);
+}
+```
+
+### 3. Image Display Hub (`src/components/ImageCarousel.tsx`)
+
+**Multi-State Management Pattern:**
+```typescript
+// Display states
 const [viewMode, setViewMode] = useState<'grid' | 'carousel'>('carousel');
+const [selectedImage, setSelectedImage] = useState<ImageData | null>(null);
 
-// Download System Integration
+// Download integration
 const [isDownloading, setIsDownloading] = useState(false);
 const [downloadProgress, setDownloadProgress] = useState<DownloadProgress | null>(null);
 
-// Collage System Integration  
+// Collage integration
 const [selectionMode, setSelectionMode] = useState(false);
 const [selectedImages, setSelectedImages] = useState<Set<string>>(new Set());
-const [collagePreview, setCollagePreview] = useState<{blob: Blob | null; url: string | null}>();
 ```
 
-**Step-by-Step User Interactions:**
-
-**A. Image Display Flow:**
-1. **Error Handling**: `handleImageError()` removes failed images from display
-2. **View Mode Toggle**: Switch between carousel and grid layouts
-3. **Image Selection**: Click handling for preview or multi-select modes
-4. **Full-Screen Preview**: Modal dialog with source attribution
-
-**B. Download Process Flow:**
-1. **Initiation**: `handleDownload()` → validates images → calls `downloadService`
-2. **Progress Tracking**: Real-time updates via service worker messages
-3. **Completion**: Automatic file download + success notification
-4. **Error Recovery**: Cancel functionality + error message display
-
-**C. Collage Creation Flow:**
-1. **Selection Mode**: Toggle multi-select with visual indicators
-2. **Image Selection**: Max 5 images with numbered badges
-3. **Generation**: `handleGenerateCollage()` → `collageService.generateCollage()`
-4. **Preview**: `CollagePreviewDialog` with print integration
-
-**Download Integration:**
-- Smart button states (Download All/Cancel based on state)
-- Real-time progress tracking with LinearProgress component
-- Error handling with Snackbar notifications
-- Success feedback and automatic cleanup
-- Download cancellation support
-
-**Collage Integration:**
-- Toggle selection mode for multi-select
-- Visual selection indicators with numbered badges
-- Maximum 5 image selection limit
-- Real-time selection counter
-- Integrated collage generation and download
-
-**Responsive Breakpoints:**
-```javascript
-superLargeDesktop: 5 items (1400px+)
-desktop: 4 items (1024-1400px)
-tablet: 2 items (464-1024px)
-mobile: 1 item (0-464px)
+**Interaction Handling Logic:**
+```typescript
+const handleImageClick = (image: ImageData) => {
+  if (selectionMode) {
+    toggleImageSelection(image.url);  // Multi-select mode
+  } else {
+    setSelectedImage(image);          // Preview mode
+  }
+};
 ```
 
-**UI State Logic:**
-```javascript
-// Button visibility and states
-downloadButton: enabled when images > 0 && !selectionMode && !downloading
-collageButton: toggles selectionMode, shows selection count
-generateButton: enabled when selectedImages.size > 0
-cancelButton: shown only during active download
+**Responsive Carousel Configuration:**
+```typescript
+const responsive = {
+  superLargeDesktop: { breakpoint: { max: 4000, min: 1400 }, items: 5 },
+  desktop: { breakpoint: { max: 1400, min: 1024 }, items: 4 },
+  tablet: { breakpoint: { max: 1024, min: 464 }, items: 2 },
+  mobile: { breakpoint: { max: 464, min: 0 }, items: 1 }
+};
 ```
 
-## Backend Crawling Engine (`server/server.js`)
+## 🖥️ Backend Crawling Engine (`server/server.js`)
 
-### Step-by-Step Crawling Process
+### Crawling Algorithm Implementation
 
 **Phase 1: Initialization & Validation**
 ```javascript
 class ImageCrawler {
   async crawlImages(startUrl) {
-    // 1. Reset crawler state
     this.visitedUrls = new Set();
     this.foundImages = new Set();
     this.startTime = Date.now();
     
-    // 2. Validate and normalize URL
     const url = new URL(startUrl);
     this.domain = url.hostname;
     
-    // 3. Check robots.txt compliance
     await this.checkRobotsTxt(url);
   }
 }
 ```
 
-**Phase 2: Recursive Page Crawling**
+**Phase 2: Recursive Page Processing**
 ```javascript
 async crawlPage(url, depth = 0) {
-  // Termination conditions check
   if (this.shouldStop() || depth > 1) return;
   
-  // 1. Fetch page content with timeout
   const response = await axios.get(url, { timeout: 10000 });
-  
-  // 2. Parse HTML with Cheerio
   const $ = cheerio.load(response.data);
   
-  // 3. Extract images from current page
   await this.extractImages($, url);
   
-  // 4. Extract and follow internal links (depth + 1)
   if (depth === 0) {
     await this.followLinks($, url, depth + 1);
   }
 }
 ```
 
-**Phase 3: Image Extraction Algorithm**
+**Phase 3: Image Extraction & Filtering**
 ```javascript
 async extractImages($, pageUrl) {
   $('img').each((index, element) => {
     const src = $(element).attr('src');
-    const alt = $(element).attr('alt');
-    
-    // 1. Convert relative to absolute URL
     const imageUrl = new URL(src, pageUrl).href;
     
-    // 2. Apply filtering rules
     if (this.shouldSkipImage(imageUrl, element)) return;
     
-    // 3. Store image data
     this.foundImages.add({
       url: imageUrl,
       sourceUrl: pageUrl,
-      alt: alt || ''
+      alt: $(element).attr('alt') || ''
     });
   });
 }
 ```
 
-**Crawling Rules & Limits:**
-- **Time Limit**: 180 seconds (3 minutes) maximum
-- **Image Limit**: 50 images maximum per crawl
-- **Depth Limit**: 2 levels (main page + 1 level of internal links)
-- **Domain Restriction**: Only same-domain links followed
-- **Robots.txt Compliance**: Respects crawl permissions
-- **Rate Limiting**: Built-in delays via timeout mechanisms
-
-**Image Filtering Logic:**
+**Termination Conditions:**
 ```javascript
-// Skip tiny images (tracking pixels)
-if (width < 50 || height < 50) skip;
-
-// Skip tracking/analytics images
-if (url.includes('tracking|analytics|beacon')) skip;
-
-// Skip duplicate URLs
-if (foundImages.has(url)) skip;
-```
-
-### API Endpoints
-- `POST /api/crawl`: Main crawling endpoint
-- `GET /health`: Server health check
-
-## Frontend-Backend Communication (`src/utils/crawler.ts`)
-
-**API Client Pattern:**
-- Singleton ImageCrawler class
-- Fetch-based HTTP client with error handling
-- Environment-based API URL configuration
-- Comprehensive error categorization
-
-**Error Handling Strategy:**
-1. **Network Errors**: Connection failures, server unavailable
-2. **HTTP Errors**: 4xx/5xx status codes with server error messages
-3. **Parsing Errors**: Invalid JSON responses
-4. **Timeout Errors**: Request timeouts
-
-## Secure Download System Architecture
-
-### Service Worker Implementation (`public/download-worker.js`)
-
-**Step-by-Step Download Process:**
-
-**Phase 1: Security Validation**
-```javascript
-class SecureImageDownloader {
-  async downloadImages(images, requestId) {
-    // 1. Input validation
-    if (!Array.isArray(images) || images.length === 0) {
-      throw new Error('Invalid images array');
-    }
-    
-    // 2. Limit enforcement
-    if (images.length > 100) {
-      throw new Error('Too many images requested (max 100)');
-    }
-    
-    // 3. Initialize security tracking
-    this.totalDownloaded = 0;
-    this.abortController = new AbortController();
-  }
+shouldStop() {
+  return (
+    this.foundImages.size >= 50 ||                    // Image limit
+    Date.now() - this.startTime > 180000 ||          // Time limit
+    this.visitedUrls.size > 20                       // Page limit
+  );
 }
 ```
 
-**Phase 2: Concurrent Download Processing**
-```javascript
-async processBatch(images, requestId) {
-  const semaphore = new Semaphore(3); // Max 3 concurrent downloads
-  
-  const downloadPromises = images.map(async (image, index) => {
-    return semaphore.acquire(async () => {
-      try {
-        const result = await this.downloadSingleImage(image, index, requestId);
-        this.sendProgress(requestId, ++completed, total, `Downloaded ${completed}/${total}`);
-        return result;
-      } catch (error) {
-        console.warn(`Failed to download image ${index}:`, error.message);
-        // Continue with other downloads (error isolation)
-      }
-    });
-  });
-  
-  return Promise.allSettled(downloadPromises);
-}
-```
+## 🎨 Canvas-Based Collage System (`src/utils/collageService.ts`)
 
-**Phase 3: Individual Image Security Pipeline**
-```javascript
-async downloadSingleImage(image, index, requestId) {
-  // 1. URL validation
-  if (!this.isValidImageUrl(image.url)) {
-    throw new Error(`Invalid image URL: ${image.url}`);
-  }
-  
-  // 2. Size limit check
-  if (this.totalDownloaded > MAX_TOTAL_SIZE) {
-    throw new Error('Total download size limit exceeded');
-  }
-  
-  // 3. Secure fetch with timeout
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 30000);
-  
-  const response = await fetch(image.url, {
-    signal: controller.signal,
-    mode: 'cors',
-    credentials: 'omit'
-  });
-  
-  // 4. Content validation
-  const contentType = response.headers.get('content-type');
-  if (!this.isValidMimeType(contentType)) {
-    throw new Error(`Invalid content type: ${contentType}`);
-  }
-  
-  // 5. Size validation and processing
-  const arrayBuffer = await response.arrayBuffer();
-  if (arrayBuffer.byteLength > MAX_FILE_SIZE) {
-    throw new Error(`File too large: ${arrayBuffer.byteLength} bytes`);
-  }
-  
-  this.totalDownloaded += arrayBuffer.byteLength;
-  
-  return {
-    filename: this.generateSafeFilename(image.url, index, contentType),
-    data: arrayBuffer,
-    originalUrl: image.url,
-    sourceUrl: image.sourceUrl,
-    alt: image.alt
-  };
-}
-```
+### Collage Generation Pipeline
 
-**Phase 4: ZIP Creation & Delivery**
-```javascript
-async createZipFile(downloadedImages) {
-  const zip = new JSZip();
-  
-  // Add images to ZIP
-  downloadedImages.forEach((image) => {
-    zip.file(image.filename, image.data);
-  });
-  
-  // Add metadata file
-  const metadata = {
-    downloadDate: new Date().toISOString(),
-    totalImages: downloadedImages.length,
-    images: downloadedImages.map(img => ({
-      filename: img.filename,
-      originalUrl: img.originalUrl,
-      sourceUrl: img.sourceUrl,
-      alt: img.alt
-    }))
-  };
-  
-  zip.file('metadata.json', JSON.stringify(metadata, null, 2));
-  
-  return await zip.generateAsync({
-    type: 'blob',
-    compression: 'DEFLATE',
-    compressionOptions: { level: 6 }
-  });
-}
-```
-
-**Security Enforcement Rules:**
-- **File Size**: 50MB per image, 500MB total
-- **MIME Types**: Whitelist of image formats only
-- **Protocols**: HTTP/HTTPS only
-- **Timeouts**: 30 seconds per image
-- **Concurrency**: Maximum 3 simultaneous downloads
-- **Isolation**: Service worker context separation
-
-## Canvas-Based Collage Generation System
-
-### Collage Service Implementation (`src/utils/collageService.ts`)
-
-**Step-by-Step Collage Creation Process:**
-
-**Phase 1: Canvas Initialization**
-```javascript
+**Phase 1: Canvas Setup & Validation**
+```typescript
 class CollageService {
-  constructor() {
-    this.canvas = document.createElement('canvas');
-    const context = this.canvas.getContext('2d');
-    if (!context) {
-      throw new Error('Canvas 2D context not supported');
-    }
-    this.ctx = context;
-  }
-  
-  async generateCollage(selectedImages, options = {
-    width: 1200,
-    height: 800,
-    layout: 'grid',
-    backgroundColor: '#ffffff',
-    padding: 10
-  }) {
-    // 1. Validation
-    if (selectedImages.length === 0) {
-      return { success: false, error: 'No images selected' };
+  async generateCollage(selectedImages: ImageData[], options: CollageOptions) {
+    // Validation
+    if (selectedImages.length === 0 || selectedImages.length > 5) {
+      return { success: false, error: 'Invalid image count' };
     }
     
-    // 2. Canvas setup
+    // Canvas initialization
     this.canvas.width = options.width;
     this.canvas.height = options.height;
     this.ctx.fillStyle = options.backgroundColor;
@@ -526,15 +251,15 @@ class CollageService {
 }
 ```
 
-**Phase 2: Image Loading Pipeline**
-```javascript
+**Phase 2: Image Loading with CORS Handling**
+```typescript
 private async loadImages(imageData: ImageData[]): Promise<HTMLImageElement[]> {
   const loadPromises = imageData.map((data) => {
     return new Promise<HTMLImageElement>((resolve, reject) => {
       const img = new Image();
-      img.crossOrigin = 'anonymous'; // Enable CORS
+      img.crossOrigin = 'anonymous';  // Enable CORS
       img.onload = () => resolve(img);
-      img.onerror = () => reject(new Error(`Failed to load image: ${data.url}`));
+      img.onerror = () => reject(new Error(`Failed to load: ${data.url}`));
       img.src = data.url;
     });
   });
@@ -544,61 +269,25 @@ private async loadImages(imageData: ImageData[]): Promise<HTMLImageElement[]> {
 ```
 
 **Phase 3: Dynamic Layout Calculation**
-```javascript
+```typescript
 private calculateLayout(imageCount: number, options: CollageOptions) {
   const { width, height, padding } = options;
   const availableWidth = width - padding * 2;
   const availableHeight = height - padding * 2;
 
   switch (imageCount) {
-    case 1:
-      return [{ x: padding, y: padding, width: availableWidth, height: availableHeight }];
-      
-    case 2:
-      const halfWidth = (availableWidth - padding) / 2;
-      return [
-        { x: padding, y: padding, width: halfWidth, height: availableHeight },
-        { x: padding + halfWidth + padding, y: padding, width: halfWidth, height: availableHeight }
-      ];
-      
-    case 3:
-      const thirdWidth = (availableWidth - padding * 2) / 3;
-      return [
-        { x: padding, y: padding, width: thirdWidth, height: availableHeight },
-        { x: padding + thirdWidth + padding, y: padding, width: thirdWidth, height: availableHeight },
-        { x: padding + (thirdWidth + padding) * 2, y: padding, width: thirdWidth, height: availableHeight }
-      ];
-      
-    case 4:
-      const quarterWidth = (availableWidth - padding) / 2;
-      const quarterHeight = (availableHeight - padding) / 2;
-      return [
-        { x: padding, y: padding, width: quarterWidth, height: quarterHeight },
-        { x: padding + quarterWidth + padding, y: padding, width: quarterWidth, height: quarterHeight },
-        { x: padding, y: padding + quarterHeight + padding, width: quarterWidth, height: quarterHeight },
-        { x: padding + quarterWidth + padding, y: padding + quarterHeight + padding, width: quarterWidth, height: quarterHeight }
-      ];
-      
-    case 5:
-      // Complex layout: 2 top images + 3 bottom images
-      const topWidth = (availableWidth - padding) / 2;
-      const topHeight = (availableHeight - padding) / 2;
-      const bottomWidth = (availableWidth - padding * 2) / 3;
-      const bottomHeight = availableHeight - topHeight - padding;
-      return [
-        { x: padding, y: padding, width: topWidth, height: topHeight },
-        { x: padding + topWidth + padding, y: padding, width: topWidth, height: topHeight },
-        { x: padding, y: padding + topHeight + padding, width: bottomWidth, height: bottomHeight },
-        { x: padding + bottomWidth + padding, y: padding + topHeight + padding, width: bottomWidth, height: bottomHeight },
-        { x: padding + (bottomWidth + padding) * 2, y: padding + topHeight + padding, width: bottomWidth, height: bottomHeight }
-      ];
+    case 1: return [{ x: padding, y: padding, width: availableWidth, height: availableHeight }];
+    case 2: return this.createTwoImageLayout(availableWidth, availableHeight, padding);
+    case 3: return this.createThreeImageLayout(availableWidth, availableHeight, padding);
+    case 4: return this.createFourImageLayout(availableWidth, availableHeight, padding);
+    case 5: return this.createFiveImageLayout(availableWidth, availableHeight, padding);
   }
 }
 ```
 
 **Phase 4: Aspect-Ratio Preserving Rendering**
-```javascript
-private async drawImages(images: HTMLImageElement[], layout: LayoutPosition[], options: CollageOptions) {
+```typescript
+private async drawImages(images: HTMLImageElement[], layout: LayoutPosition[]) {
   for (let i = 0; i < images.length && i < layout.length; i++) {
     const img = images[i];
     const pos = layout[i];
@@ -610,229 +299,335 @@ private async drawImages(images: HTMLImageElement[], layout: LayoutPosition[], o
     let drawWidth, drawHeight, drawX, drawY;
 
     if (imgAspect > boxAspect) {
-      // Image is wider than box - fit to width
+      // Fit to width
       drawWidth = pos.width;
       drawHeight = pos.width / imgAspect;
       drawX = pos.x;
       drawY = pos.y + (pos.height - drawHeight) / 2;
     } else {
-      // Image is taller than box - fit to height
+      // Fit to height
       drawWidth = pos.height * imgAspect;
       drawHeight = pos.height;
       drawX = pos.x + (pos.width - drawWidth) / 2;
       drawY = pos.y;
     }
 
-    // Draw with rounded corners
     this.drawRoundedImage(img, drawX, drawY, drawWidth, drawHeight, 8);
   }
 }
+```
 
-private drawRoundedImage(img: HTMLImageElement, x: number, y: number, width: number, height: number, radius: number) {
-  this.ctx.save();
-  this.ctx.beginPath();
-  this.ctx.roundRect(x, y, width, height, radius);
-  this.ctx.clip();
-  this.ctx.drawImage(img, x, y, width, height);
-  this.ctx.restore();
+## 🔒 Security Architecture
+
+### Service Worker Download System (`public/download-worker.js`)
+
+**Security Validation Pipeline:**
+```javascript
+class SecureImageDownloader {
+  async downloadSingleImage(image, index, requestId) {
+    // 1. URL validation
+    if (!this.isValidImageUrl(image.url)) {
+      throw new Error(`Invalid image URL: ${image.url}`);
+    }
+    
+    // 2. Size limit enforcement
+    if (this.totalDownloaded > MAX_TOTAL_SIZE) {
+      throw new Error('Total download size limit exceeded');
+    }
+    
+    // 3. Secure fetch with timeout
+    const response = await fetch(image.url, {
+      signal: this.abortController.signal,
+      mode: 'cors',
+      credentials: 'omit'
+    });
+    
+    // 4. Content type validation
+    const contentType = response.headers.get('content-type');
+    if (!this.isValidMimeType(contentType)) {
+      throw new Error(`Invalid content type: ${contentType}`);
+    }
+    
+    // 5. File size validation
+    const arrayBuffer = await response.arrayBuffer();
+    if (arrayBuffer.byteLength > MAX_FILE_SIZE) {
+      throw new Error(`File too large: ${arrayBuffer.byteLength} bytes`);
+    }
+    
+    return this.processValidatedImage(arrayBuffer, image, index);
+  }
 }
 ```
 
-**Phase 5: Export & Download**
+**Concurrency Control with Semaphore:**
 ```javascript
-// Convert canvas to blob and create download
-return new Promise((resolve) => {
-  this.canvas.toBlob((blob) => {
-    if (blob) {
-      const imageUrl = URL.createObjectURL(blob);
-      resolve({ 
-        success: true, 
-        imageBlob: blob,
-        imageUrl: imageUrl
-      });
-    } else {
-      resolve({ success: false, error: 'Failed to generate collage image' });
-    }
-  }, 'image/png', 0.9);
-});
-```
-
-**Layout Patterns by Image Count:**
-- **1 Image**: Full canvas utilization
-- **2 Images**: Horizontal split (50/50)
-- **3 Images**: Horizontal thirds (33/33/33)
-- **4 Images**: 2x2 grid layout
-- **5 Images**: 2 top (50/50) + 3 bottom (33/33/33)
-
-**Canvas Rendering Pipeline:**
-- Background fill with configurable color
-- Image aspect ratio preservation
-- Rounded corner clipping (8px radius)
-- Centered positioning within layout bounds
-- Padding management between images
-
-### Print Integration System (`src/components/CollagePreviewDialog.tsx` + `src/utils/printService.ts`)
-
-**Step-by-Step Print Order Process:**
-
-**Phase 1: Collage Preview & Options**
-```javascript
-// CollagePreviewDialog.tsx
-const CollagePreviewDialog = ({ imageBlob, imageUrl }) => {
-  const [printOptions, setPrintOptions] = useState({
-    size: 'medium',      // small (12"×18"), medium (18"×24"), large (24"×36")
-    paperType: 'matte',  // matte or glossy
-    quantity: 1
+async processBatch(images, requestId) {
+  const semaphore = new Semaphore(3); // Max 3 concurrent downloads
+  
+  const downloadPromises = images.map(async (image, index) => {
+    return semaphore.acquire(async () => {
+      try {
+        return await this.downloadSingleImage(image, index, requestId);
+      } catch (error) {
+        console.warn(`Download failed for image ${index}:`, error.message);
+        return null; // Continue with other downloads
+      }
+    });
   });
   
-  const [customerInfo, setCustomerInfo] = useState({
-    name: '',
-    email: '',
-    address: { /* shipping details */ }
-  });
+  return Promise.allSettled(downloadPromises);
+}
+```
+
+## 🛍️ Merchandise System Architecture
+
+### Product Catalog Management (`src/utils/printService.ts`)
+
+**Product Category Structure:**
+```typescript
+const PRODUCT_CATALOG: { [key: string]: ProductCategory } = {
+  poster: {
+    id: 'poster',
+    name: 'Posters',
+    icon: '🖼️',
+    variants: [
+      { id: 1, name: 'Small Poster', size: '12"×18"', price: 15.95 },
+      { id: 2, name: 'Medium Poster', size: '18"×24"', price: 19.95 },
+      { id: 3, name: 'Large Poster', size: '24"×36"', price: 24.95 }
+    ]
+  },
+  tshirt: {
+    id: 'tshirt',
+    name: 'T-Shirts',
+    icon: '👕',
+    placement: ['front', 'back', 'both'],
+    variants: [/* size/color combinations */]
+  }
+  // ... 7 more product categories
 };
 ```
 
-**Phase 2: Printful API Integration**
-```javascript
-// printService.ts
-class PrintService {
-  async createPrintOrder(imageBlob, options, customerInfo) {
+**Printful API Integration Pattern:**
+```typescript
+class MerchandiseService {
+  async createMerchandiseOrder(imageBlob: Blob, options: PrintOptions, customerInfo: any) {
     // 1. Upload image to Printful
     const imageUrl = await this.uploadImage(imageBlob);
     
-    // 2. Create order payload
+    // 2. Prepare order data
     const orderData = {
       recipient: customerInfo.address,
       items: [{
-        sync_variant_id: POSTER_PRODUCTS[options.size],
+        variant_id: this.findVariantByOptions(options).id,
         quantity: options.quantity,
-        files: [{ type: 'default', url: imageUrl }]
+        files: this.prepareProductFiles(imageUrl, options)
       }]
     };
     
-    // 3. Submit order to Printful API
+    // 3. Submit to Printful API
     const response = await fetch(`${PRINTFUL_API_BASE}/orders`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${this.apiKey}`,
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Authorization': `Bearer ${this.apiKey}` },
       body: JSON.stringify(orderData)
     });
     
-    return {
-      success: true,
-      orderId: result.result.id,
-      orderUrl: `https://www.printful.com/dashboard/orders/${result.result.id}`,
-      estimatedCost: result.result.costs.total
-    };
+    return this.handleOrderResponse(response);
   }
 }
 ```
 
-**Phase 3: Order Management Flow**
-1. **Preview**: User sees collage with print options
-2. **Configuration**: Size, paper type, quantity selection
-3. **Customer Info**: Shipping address collection
-4. **Order Submission**: Printful API integration
-5. **Confirmation**: Order ID and tracking information
+## 🏛️ Clean Architecture Implementation
 
-### Service Communication Architecture
+### Service Layer Pattern (`src/services/`)
 
-**Download Service (`src/utils/downloadService.ts`)**
-```javascript
-class DownloadService {
-  // Main Thread ←→ Service Worker Communication
-  async downloadImages(images, onProgress) {
-    return new Promise((resolve, reject) => {
-      // 1. Generate unique request ID
-      this.currentRequestId = `download_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      
-      // 2. Setup progress callback
-      this.progressCallback = onProgress;
-      
-      // 3. Send message to service worker
-      this.worker.postMessage({
-        type: 'DOWNLOAD_IMAGES',
-        requestId: this.currentRequestId,
-        data: { images }
-      });
-      
-      // 4. Handle completion/error via message handlers
-      this.handleDownloadComplete = (data) => {
-        this.triggerDownload(data.zipBlob);
-        resolve({ success: true, ...data });
-      };
-    });
-  }
-  
-  private triggerDownload(zipBlob) {
-    const url = URL.createObjectURL(zipBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `images_${new Date().toISOString().split('T')[0]}.zip`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  }
-}
-```
-
-**Communication Flow:**
-```
-UI Component → DownloadService → Service Worker
-     ↓               ↓               ↓
-Button Click → postMessage → downloadImages()
-     ↓               ↓               ↓
-Progress UI ← onProgress ← DOWNLOAD_PROGRESS
-     ↓               ↓               ↓
-Success UI  ← Promise  ← DOWNLOAD_COMPLETE
-```
-
-### Security Configuration (`src/utils/securityConfig.ts`)
-
-**Centralized Security:**
-- **SECURITY_CONFIG**: All security constants and limits
-- **SecurityValidator**: Input validation utility functions
-- **SecurityAudit**: Logging and monitoring for security events
-
-**Validation Pipeline:**
-1. URL protocol and format validation
-2. MIME type whitelist checking
-3. File size and count limit enforcement
-4. Filename sanitization
-5. Total download size tracking
-
-## Type System (`src/types.ts`)
-
-**Core Interfaces:**
+**Dependency Inversion with Interfaces:**
 ```typescript
-ImageData: {
+// Interface definition
+interface ICrawlerService {
+  crawlImages(request: CrawlRequest): Promise<ApiResponse<CrawlResponse>>;
+  validateUrl(url: string): boolean;
+  isAllowedByCrawlPolicy(url: string): Promise<boolean>;
+}
+
+// Implementation
+class CrawlerService implements ICrawlerService {
+  constructor(private httpClient: HttpClient, private config: CrawlerConfig) {}
+  
+  async crawlImages(request: CrawlRequest): Promise<ApiResponse<CrawlResponse>> {
+    // Implementation details...
+  }
+}
+```
+
+**Service Factory for Dependency Injection:**
+```typescript
+export class ServiceFactory {
+  private static instance: ServiceFactory;
+  private services: Map<string, any> = new Map();
+
+  public registerService<T>(key: string, service: T): void {
+    this.services.set(key, service);
+  }
+
+  public getCrawlerService(): ICrawlerService {
+    return this.getService<ICrawlerService>('crawler');
+  }
+}
+```
+
+**Service Initialization Pattern:**
+```typescript
+export class ServiceInitializer {
+  public static initialize(environment: 'development' | 'production' = 'development'): void {
+    const config = this.createConfig(environment);
+    const httpClient = new HttpClient();
+    const serviceFactory = ServiceFactory.getInstance();
+    
+    serviceFactory.registerService('crawler', createCrawlerService(httpClient));
+    serviceFactory.registerService('collage', createCollageService());
+  }
+}
+```
+
+## 📊 Type System & Data Contracts (`src/types.ts` + `src/contracts/api.ts`)
+
+### Core Data Interfaces
+```typescript
+// Frontend types (legacy compatibility)
+export interface ImageData {
   url: string;        // Absolute image URL
   sourceUrl: string;  // Page where image was found
   alt?: string;       // Alt text from img tag
 }
 
-CrawlResult: {
-  images: ImageData[];
-  error?: string;     // Error message if crawl failed
-}
-
-DownloadProgress: {
-  current: number;    // Current download count
-  total: number;      // Total images to download
-  percentage: number; // Completion percentage
-  message: string;    // Status message for UI
-}
-
-DownloadResult: {
+// API contracts (new architecture)
+export interface ApiResponse<T = any> {
   success: boolean;
-  zipBlob?: Blob;     // Generated ZIP file
-  downloadedCount?: number;
-  totalCount?: number;
+  data?: T;
   error?: string;
+  timestamp: string;
+}
+
+export interface CrawlRequest {
+  url: string;
+  maxImages?: number;
+  timeout?: number;
+}
+
+export interface CrawlResponse {
+  images: ImageMetadata[];
+  sourceUrl: string;
+  crawledAt: string;
+  totalFound: number;
+}
+```
+
+### State Management Patterns
+```typescript
+// Component state pattern
+const [images, setImages] = useState<ImageData[]>([]);
+const [isLoading, setIsLoading] = useState(false);
+const [error, setError] = useState<string>('');
+
+// Complex state with multiple concerns
+const [downloadState, setDownloadState] = useState<{
+  isDownloading: boolean;
+  progress: DownloadProgress | null;
+  error: string | null;
+}>({
+  isDownloading: false,
+  progress: null,
+  error: null
+});
+```
+
+## 🔄 Communication Patterns
+
+### Frontend ↔ Backend API Communication
+```typescript
+// API client pattern
+class ImageCrawler {
+  async crawl(url: string): Promise<CrawlResult> {
+    try {
+      const normalizedUrl = url.startsWith('http') ? url : `https://${url}`;
+      const response = await fetch('http://localhost:3001/api/crawl', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: normalizedUrl })
+      });
+      
+      const data = await response.json();
+      return { images: data.images || [] };
+    } catch (error) {
+      return { images: [], error: error.message };
+    }
+  }
+}
+```
+
+### Service Worker Communication
+```typescript
+// Main thread → Service worker
+this.worker.postMessage({
+  type: 'DOWNLOAD_IMAGES',
+  requestId: this.currentRequestId,
+  data: { images }
+});
+
+// Service worker → Main thread
+self.postMessage({
+  type: 'DOWNLOAD_PROGRESS',
+  requestId,
+  data: { current, total, percentage, message }
+});
+```
+
+## 🎯 Key Implementation Patterns
+
+### Error Handling Strategy
+```typescript
+// Component-level error boundaries
+try {
+  const result = await operation();
+  setSuccess(result);
+} catch (error) {
+  setError(error instanceof Error ? error.message : 'Unknown error');
+} finally {
+  setLoading(false);
+}
+```
+
+### Responsive Design Pattern
+```typescript
+const theme = useTheme();
+const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+// Conditional rendering based on screen size
+{isMobile ? (
+  <MobileComponent />
+) : (
+  <DesktopComponent />
+)}
+```
+
+### Performance Optimization
+```typescript
+// Lazy loading with React.lazy
+const MerchandiseSelector = React.lazy(() => import('./MerchandiseSelector'));
+
+// Memoization for expensive calculations
+const expensiveValue = useMemo(() => {
+  return calculateExpensiveValue(dependencies);
+}, [dependencies]);
+
+// Debounced input handling
+const debouncedSearch = useCallback(
+  debounce((query: string) => performSearch(query), 300),
+  []
+);
+```
+
+This technical walkthrough provides developers with the essential understanding needed to navigate, modify, and extend the CollageForge codebase effectively. Each section focuses on the practical implementation details and patterns used throughout the application.ing;
 }
 
 CollageOptions: {

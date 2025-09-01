@@ -28,12 +28,21 @@ export interface DownloadResult {
   error?: string;
 }
 
+export interface TextCustomization {
+  text: string;
+  color: string;
+  template: 'top-center' | 'bottom-center' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+  fontSize: number;
+  fontFamily: string;
+}
+
 export interface CollageOptions {
   width: number;
   height: number;
   layout: 'grid' | 'mosaic';
   backgroundColor: string;
   padding: number;
+  textCustomization?: TextCustomization;
 }
 
 export interface CollageResult {

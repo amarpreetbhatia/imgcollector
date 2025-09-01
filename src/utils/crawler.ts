@@ -1,37 +1,66 @@
+// Legacy crawler service - temporarily restored for immediate compatibility
+// TODO: Migrate to new service architecture
+
 import { CrawlResult } from '../types';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
-
 class ImageCrawler {
-  async crawl(startUrl: string): Promise<CrawlResult> {
+  async crawl(url: string): Promise<CrawlResult> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/crawl`, {
+      // Validate URL
+      if (!this.validateUrl(url)) {
+        return {
+          images: [],
+          error: 'Invalid URL provided',
+        };
+      }
+
+      // Make request to backend crawler service
+      const normalizedUrl = url.startsWith('http') ? url : `https://${url}`;
+      const response = await fetch('http://localhost:3001/api/crawl', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ url: startUrl }),
+        body: JSON.stringify({ url: normalizedUrl }),
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      const result = await response.json();
-      return result;
-    } catch (error) {
-      if (error instanceof TypeError && error.message.includes('fetch')) {
+      const data = await response.json();
+      
+      if (data.error) {
         return {
           images: [],
-          error: 'Unable to connect to the crawling server. Please make sure the backend server is running on port 3001.'
+          error: data.error,
         };
       }
 
       return {
-        images: [],
-        error: error instanceof Error ? error.message : 'Unknown error occurred'
+        images: data.images || [],
       };
+
+    } catch (error) {
+      console.error('Crawling failed:', error);
+      return {
+        images: [],
+        error: error instanceof Error ? error.message : 'Crawling failed',
+      };
+    }
+  }
+
+  private validateUrl(url: string): boolean {
+    try {
+      const normalizedUrl = url.startsWith('http') ? url : `https://${url}`;
+      const urlObj = new URL(normalizedUrl);
+      
+      return (
+        (urlObj.protocol === 'http:' || urlObj.protocol === 'https:') &&
+        urlObj.hostname.length > 0
+      );
+    } catch {
+      return false;
     }
   }
 }
