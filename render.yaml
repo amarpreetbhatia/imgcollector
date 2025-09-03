@@ -1,0 +1,30 @@
+services:
+  # Backend Service
+  - type: web
+    name: collageforge-backend
+    env: node
+    plan: starter
+    buildCommand: cd server && npm install
+    startCommand: cd server && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: CORS_ORIGIN
+        sync: false # Set manually: https://collageforge-frontend.onrender.com
+
+  # Frontend Service  
+  - type: web
+    name: collageforge-frontend
+    env: static
+    plan: starter
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./build
+    envVars:
+      - key: REACT_APP_API_URL
+        sync: false # Set manually: https://collageforge-backend.onrender.com
+      - key: REACT_APP_PRINTFUL_API_KEY
+        sync: false # Set this manually in Render dashboard
+      - key: REACT_APP_PRINT_ORDER_EMAIL
+        value: orders@collageforge.com

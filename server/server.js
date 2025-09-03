@@ -8,8 +8,18 @@ const { URL } = require('url');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.use(cors());
-app.use(express.json());
+// CORS configuration for production
+const corsOptions = {
+  origin: process.env.CORS_ORIGIN || process.env.NODE_ENV === 'production'
+    ? ['https://collageforge.onrender.com', 'https://collageforge-frontend.onrender.com']
+    : ['http://localhost:3000'],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 const MAX_IMAGES = 50;
 const MAX_TIME_MS = 3 * 60 * 1000; // 3 minutes
@@ -30,7 +40,7 @@ class ImageCrawler {
     try {
       const normalizedUrl = this.normalizeUrl(startUrl);
       const images = [];
-      
+
       // Check robots.txt for the main domain
       const robotsAllowed = await this.checkRobotsTxt(normalizedUrl);
       if (!robotsAllowed) {
@@ -78,10 +88,10 @@ class ImageCrawler {
       // If we're at depth 0, crawl one level deeper
       if (depth === 0) {
         const links = this.extractLinks($, url);
-        
+
         for (const link of links.slice(0, 10)) { // Limit to 10 links
           if (this.shouldStop()) break;
-          
+
           const robotsAllowed = await this.checkRobotsTxt(link);
           if (robotsAllowed) {
             await this.crawlUrl(link, images, depth + 1);
@@ -106,21 +116,21 @@ class ImageCrawler {
         const width = $(element).attr('width');
         const height = $(element).attr('height');
         const alt = $(element).attr('alt') || '';
-        
+
         // Skip tiny images, tracking pixels, and common UI elements
         if (width && height && (parseInt(width) < 50 || parseInt(height) < 50)) {
           return;
         }
-        
-        if (alt.toLowerCase().includes('pixel') || 
-            absoluteUrl.includes('tracking') ||
-            absoluteUrl.includes('analytics') ||
-            absoluteUrl.includes('beacon')) {
+
+        if (alt.toLowerCase().includes('pixel') ||
+          absoluteUrl.includes('tracking') ||
+          absoluteUrl.includes('analytics') ||
+          absoluteUrl.includes('beacon')) {
           return;
         }
 
         this.foundImages.add(absoluteUrl);
-        
+
         images.push({
           url: absoluteUrl,
           sourceUrl,
@@ -139,7 +149,7 @@ class ImageCrawler {
     $('a[href]').each((_, element) => {
       const href = $(element).attr('href');
       const rel = $(element).attr('rel');
-      
+
       // Respect nofollow
       if (rel && rel.includes('nofollow')) {
         return;
@@ -171,10 +181,10 @@ class ImageCrawler {
         timeout: 5000,
         headers: { 'User-Agent': USER_AGENT }
       });
-      
+
       const robots = robotsParser(robotsUrl, response.data);
       const urlPath = new URL(url).pathname;
-      
+
       return robots.isAllowed(USER_AGENT, urlPath) !== false;
     } catch (error) {
       // If robots.txt doesn't exist or can't be fetched, assume crawling is allowed
@@ -208,18 +218,18 @@ class ImageCrawler {
 // API endpoint
 app.post('/api/crawl', async (req, res) => {
   const { url } = req.body;
-  
+
   if (!url) {
     return res.status(400).json({ error: 'URL is required' });
   }
 
   console.log(`Starting crawl for: ${url}`);
-  
+
   const crawler = new ImageCrawler();
   const result = await crawler.crawl(url);
-  
+
   console.log(`Crawl completed. Found ${result.images.length} images`);
-  
+
   res.json(result);
 });
 
@@ -227,6 +237,25 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-app.listen(PORT, () => {
-  console.log(`Image Crawler Server running on port ${PORT}`);
+// Production error handling
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, shutting down gracefully');
+  process.exit(0);
+});
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 CollageForge Backend running on port ${PORT}`);
+  console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🌐 CORS Origin: ${process.env.CORS_ORIGIN || 'localhost'}`);
 });

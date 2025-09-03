@@ -134,3 +134,7 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Deployment files (keep render.yaml for automatic deployment)
+# render.yaml - KEEP THIS FILE for Render deployment
+# .env.production - Template file, update values for production

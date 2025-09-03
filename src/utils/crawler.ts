@@ -16,7 +16,8 @@ class ImageCrawler {
 
       // Make request to backend crawler service
       const normalizedUrl = url.startsWith('http') ? url : `https://${url}`;
-      const response = await fetch('http://localhost:3001/api/crawl', {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${apiUrl}/api/crawl`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

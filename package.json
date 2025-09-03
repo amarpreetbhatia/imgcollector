@@ -37,7 +37,9 @@
         "server:dev": "cd server && npm run dev",
         "dev": "concurrently \"npm run server:dev\" \"npm start\"",
         "install:server": "cd server && npm install",
-        "setup": "node setup.js"
+        "setup": "node setup.js",
+        "deploy:prepare": "chmod +x scripts/deploy.sh && ./scripts/deploy.sh",
+        "build:production": "NODE_ENV=production npm run build"
     },
     "eslintConfig": {
         "extends": [
