@@ -13,6 +13,8 @@ services:
         value: 10000
       - key: CORS_ORIGIN
         sync: false # Set manually: https://collageforge-frontend.onrender.com
+      - key: GOOGLE_AI_API_KEY
+        sync: false # Set manually: Get from https://ai.google.dev/
 
   # Frontend Service  
   - type: web

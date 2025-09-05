@@ -32,6 +32,7 @@ import {
   CheckCircle as CheckCircleIcon,
   ViewModule as GridIcon,
   ViewCarousel as CarouselIcon,
+  AutoFixHigh as MagicIcon,
 } from '@mui/icons-material';
 import Carousel from 'react-multi-carousel';
 import 'react-multi-carousel/lib/styles.css';
@@ -40,6 +41,9 @@ import { ImageData } from '../types';
 import { downloadService, DownloadProgress } from '../utils/downloadService';
 import { collageService } from '../utils/collageService';
 import CollagePreviewDialog from './CollagePreviewDialog';
+import { AIImageBlender } from './AIImageBlender';
+import { BlendImageResult } from '../types';
+import logger from '../utils/logger';
 
 interface ImageCarouselProps {
   images: ImageData[];
@@ -64,6 +68,8 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
     url: string | null;
   }>({ blob: null, url: null });
   const [showCollagePreview, setShowCollagePreview] = useState(false);
+  const [showAIBlender, setShowAIBlender] = useState(false);
+  const [selectedImageForAI, setSelectedImageForAI] = useState<ImageData | null>(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -149,7 +155,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
       setDownloadSuccess(true);
       setDownloadProgress(null);
     } catch (error) {
-      console.error('Download failed:', error);
+      logger.error('Download failed', 'ImageCarousel', 'download', error);
       setDownloadError(error instanceof Error ? error.message : 'Download failed');
       setDownloadProgress(null);
     } finally {
@@ -209,7 +215,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
         setCollageError(result.error || 'Failed to generate collage');
       }
     } catch (error) {
-      console.error('Collage generation failed:', error);
+      logger.error('Collage generation failed', 'ImageCarousel', 'generateCollage', error);
       setCollageError(error instanceof Error ? error.message : 'Failed to generate collage');
     } finally {
       setIsGeneratingCollage(false);
@@ -233,6 +239,24 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
     setCollagePreview({ blob: null, url: null });
     setSelectionMode(false);
     setSelectedImages(new Set());
+  };
+
+  // AI Image Blending handlers
+  const handleAIBlendClick = (image: ImageData) => {
+    logger.userAction('AI Blend clicked', 'ImageCarousel', { imageUrl: image.url });
+    setSelectedImageForAI(image);
+    setShowAIBlender(true);
+  };
+
+  const handleAIImageGenerated = (result: BlendImageResult) => {
+    if (result.success) {
+      logger.info('AI Image generated successfully', 'ImageCarousel', 'aiImageGenerated', result);
+    }
+  };
+
+  const handleCloseAIBlender = () => {
+    setShowAIBlender(false);
+    setSelectedImageForAI(null);
   };
 
   return (
@@ -386,6 +410,8 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
                 {isDownloading ? 'Cancel Download' : `📥 Download All (${validImages.length})`}
               </Button>
             )}
+
+
           </Stack>
 
           {/* View Controls and Navigation - Right Side */}
@@ -654,6 +680,31 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
                         <OpenInNewIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
+
+                    {/* AI Blend Button */}
+                    {!selectionMode && (
+                      <Tooltip title="AI Blend this image">
+                        <IconButton
+                          size="small"
+                          sx={{
+                            position: 'absolute',
+                            bottom: 8,
+                            right: 8,
+                            background: 'linear-gradient(45deg, #FF6B6B 30%, #4ECDC4 90%)',
+                            color: 'white',
+                            '&:hover': {
+                              background: 'linear-gradient(45deg, #FF5252 30%, #26C6DA 90%)',
+                            },
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAIBlendClick(image);
+                          }}
+                        >
+                          <MagicIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
                   </Box>
                 </Card>
               </Box>
@@ -756,6 +807,31 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
                       <OpenInNewIcon fontSize="small" />
                     </IconButton>
                   </Tooltip>
+
+                  {/* AI Blend Button */}
+                  {!selectionMode && (
+                    <Tooltip title="AI Blend this image">
+                      <IconButton
+                        size="small"
+                        sx={{
+                          position: 'absolute',
+                          bottom: 8,
+                          right: 8,
+                          background: 'linear-gradient(45deg, #FF6B6B 30%, #4ECDC4 90%)',
+                          color: 'white',
+                          '&:hover': {
+                            background: 'linear-gradient(45deg, #FF5252 30%, #26C6DA 90%)',
+                          },
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAIBlendClick(image);
+                        }}
+                      >
+                        <MagicIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  )}
                 </Box>
               </Card>
             </Grid>
@@ -919,6 +995,14 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
         onClose={handleCloseCollagePreview}
         imageBlob={collagePreview.blob}
         imageUrl={collagePreview.url}
+      />
+
+      {/* AI Image Blender Dialog */}
+      <AIImageBlender
+        open={showAIBlender}
+        onClose={handleCloseAIBlender}
+        selectedImage={selectedImageForAI}
+        onImageGenerated={handleAIImageGenerated}
       />
     </Box>
   );

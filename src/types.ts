@@ -87,3 +87,18 @@ export interface PrintOrderResult {
   estimatedCost?: number;
   error?: string;
 }
+
+export interface BlendImageRequest {
+  baseImageUrl: string;
+  userImage?: File;
+  text?: string;
+  prompt?: string;
+  style?: 'realistic' | 'artistic' | 'cartoon' | 'abstract';
+}
+
+export interface BlendImageResult {
+  success: boolean;
+  imageUrl?: string;
+  imageBlob?: Blob;
+  error?: string;
+}

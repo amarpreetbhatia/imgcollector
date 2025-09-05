@@ -41,6 +41,7 @@ interface CollagePreviewDialogProps {
   onClose: () => void;
   imageBlob: Blob | null;
   imageUrl: string | null;
+  isAIGenerated?: boolean;
 }
 
 const CollagePreviewDialog: React.FC<CollagePreviewDialogProps> = ({
@@ -48,6 +49,7 @@ const CollagePreviewDialog: React.FC<CollagePreviewDialogProps> = ({
   onClose,
   imageBlob,
   imageUrl,
+  isAIGenerated = false,
 }) => {
   const [currentTab, setCurrentTab] = useState(0);
   const [showMerchandiseSelector, setShowMerchandiseSelector] = useState(false);
@@ -169,10 +171,13 @@ const CollagePreviewDialog: React.FC<CollagePreviewDialogProps> = ({
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Box>
             <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5 }}>
-              🎨 Your Custom Collage is Ready!
+              {isAIGenerated ? '✨ Your AI Image is Ready!' : '🎨 Your Custom Collage is Ready!'}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Download your creation or turn it into amazing merchandise
+              {isAIGenerated 
+                ? 'Download your AI creation or order a professional print'
+                : 'Download your creation or turn it into amazing merchandise'
+              }
             </Typography>
           </Box>
           <Button

@@ -1,5 +1,6 @@
 import { ApiResponse } from '../contracts/api';
 import { ConfigManager } from './ServiceFactory';
+import { logger, logApiCall } from '../utils/logger';
 
 /**
  * HTTP Client Service - Single Responsibility Principle
@@ -22,7 +23,23 @@ export class HttpClient {
    */
   async get<T>(endpoint: string, params?: Record<string, any>): Promise<ApiResponse<T>> {
     const url = this.buildUrl(endpoint, params);
-    return this.executeWithRetry(() => this.fetchWithTimeout(url, { method: 'GET' }));
+    logApiCall(url, 'GET', { component: 'HttpClient' });
+    
+    try {
+      const result = await this.executeWithRetry<T>(() => this.fetchWithTimeout(url, { method: 'GET' }));
+      
+      if (result.success) {
+        logger.debug('GET request successful', 'HttpClient', 'api_success', result.data);
+      } else {
+        logger.error(`GET request failed: ${result.error || 'Request failed'}`, 'HttpClient', 'api_error', result);
+      }
+      
+      return result;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      logger.error(`GET request error: ${errorMessage}`, 'HttpClient', 'api_error');
+      throw error;
+    }
   }
 
   /**
@@ -30,6 +47,8 @@ export class HttpClient {
    */
   async post<T>(endpoint: string, data?: any): Promise<ApiResponse<T>> {
     const url = this.buildUrl(endpoint);
+    logApiCall(url, 'POST', { component: 'HttpClient' });
+    
     const options: RequestInit = {
       method: 'POST',
       headers: {
@@ -37,7 +56,22 @@ export class HttpClient {
       },
       body: data ? JSON.stringify(data) : undefined,
     };
-    return this.executeWithRetry(() => this.fetchWithTimeout(url, options));
+    
+    try {
+      const result = await this.executeWithRetry<T>(() => this.fetchWithTimeout(url, options));
+      
+      if (result.success) {
+        logger.debug('POST request successful', 'HttpClient', 'api_success', result.data);
+      } else {
+        logger.error(`POST request failed: ${result.error || 'Request failed'}`, 'HttpClient', 'api_error', result);
+      }
+      
+      return result;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      logger.error(`POST request error: ${errorMessage}`, 'HttpClient', 'api_error');
+      throw error;
+    }
   }
 
   /**
@@ -50,16 +84,24 @@ export class HttpClient {
     onProgress?: (progress: number) => void
   ): Promise<ApiResponse<T>> {
     const url = this.buildUrl(endpoint);
+    logApiCall(url, 'POST', { component: 'HttpClient', action: 'file_upload' });
+    
+    logger.info('Starting file upload', 'HttpClient', 'upload_start', {
+      endpoint,
+      fileSize: file.size,
+      fileType: file instanceof File ? file.type : 'blob'
+    });
+    
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('userImage', file);
     
     if (additionalData) {
       Object.entries(additionalData).forEach(([key, value]) => {
-        formData.append(key, JSON.stringify(value));
+        formData.append(key, String(value));
       });
     }
 
-    return new Promise((resolve) => {
+    return new Promise<ApiResponse<T>>((resolve) => {
       const xhr = new XMLHttpRequest();
       
       if (onProgress) {
@@ -74,14 +116,31 @@ export class HttpClient {
       xhr.addEventListener('load', () => {
         try {
           const response = JSON.parse(xhr.responseText);
-          resolve(this.handleResponse(response, xhr.status));
+          const result = this.handleResponse<T>(response, xhr.status);
+          
+          if (result.success) {
+            logger.info('File upload completed successfully', 'HttpClient', 'upload_success', {
+              endpoint,
+              status: xhr.status
+            });
+          } else {
+            logger.error(`File upload failed: ${result.error || 'Upload failed'}`, 'HttpClient', 'upload_error', result);
+          }
+          
+          resolve(result);
         } catch (error) {
-          resolve(this.createErrorResponse('Failed to parse response'));
+          const errorResult = this.createErrorResponse<T>('Failed to parse response');
+          logger.error('Failed to parse upload response', 'HttpClient', 'parse_error');
+          resolve(errorResult);
         }
       });
 
       xhr.addEventListener('error', () => {
-        resolve(this.createErrorResponse('Network error occurred'));
+        const errorResult = this.createErrorResponse<T>('Network error occurred');
+        logger.error('File upload network error', 'HttpClient', 'upload_error', {
+          endpoint
+        });
+        resolve(errorResult);
       });
 
       xhr.open('POST', url);

@@ -2,6 +2,7 @@ import { ServiceFactory, ConfigManager, ServiceConfig } from './ServiceFactory';
 import { HttpClient } from './HttpClient';
 import { createCrawlerService } from './implementations/CrawlerService';
 import { createCollageService } from './implementations/CollageService';
+import { AIImageService } from './implementations/AIImageService';
 
 /**
  * Service Initializer - Dependency Injection Setup
@@ -31,6 +32,7 @@ export class ServiceInitializer {
     // Register services
     serviceFactory.registerService('crawler', createCrawlerService(httpClient));
     serviceFactory.registerService('collage', createCollageService());
+    serviceFactory.registerService('aiImage', new AIImageService(httpClient, config.apiBaseUrl));
     
     // Note: Print service would be registered here when implemented
     // serviceFactory.registerService('print', createPrintService(httpClient));
@@ -88,6 +90,7 @@ export const getServices = () => {
   return {
     crawler: factory.getCrawlerService(),
     collage: factory.getCollageService(),
+    aiImage: factory.getAIImageService(),
     // print: factory.getPrintService(), // When implemented
   };
 };

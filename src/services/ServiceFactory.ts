@@ -1,6 +1,7 @@
 import { ICrawlerService } from './interfaces/ICrawlerService';
 import { ICollageService } from './interfaces/ICollageService';
 import { IPrintService } from './interfaces/IPrintService';
+import { IAIImageService } from './interfaces/IAIImageService';
 
 /**
  * Service Factory implementing Dependency Inversion Principle
@@ -10,7 +11,7 @@ export class ServiceFactory {
   private static instance: ServiceFactory;
   private services: Map<string, any> = new Map();
 
-  private constructor() {}
+  private constructor() { }
 
   public static getInstance(): ServiceFactory {
     if (!ServiceFactory.instance) {
@@ -56,6 +57,13 @@ export class ServiceFactory {
    */
   public getPrintService(): IPrintService {
     return this.getService<IPrintService>('print');
+  }
+
+  /**
+   * Get AI image service
+   */
+  public getAIImageService(): IAIImageService {
+    return this.getService<IAIImageService>('aiImage');
   }
 }
 
