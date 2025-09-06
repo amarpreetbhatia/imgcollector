@@ -98,11 +98,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
     }
   };
 
-  const handleKeyPress = (event: React.KeyboardEvent) => {
-    if (event.key === 'Enter' && !isLoading) {
-      handleCrawl();
-    }
-  };
+
 
   return (
     <Box

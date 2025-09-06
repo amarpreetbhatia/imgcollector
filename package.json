@@ -52,7 +52,8 @@
         "install:server": "cd server && npm install",
         "setup": "node setup.js",
         "deploy:prepare": "chmod +x scripts/deploy.sh && ./scripts/deploy.sh",
-        "build:production": "NODE_ENV=production npm run build"
+        "build:production": "NODE_ENV=production npm run build",
+        "vercel-build": "node scripts/vercel-build.js"
     },
     "eslintConfig": {
         "extends": [
