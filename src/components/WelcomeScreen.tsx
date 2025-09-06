@@ -383,15 +383,18 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                 borderColor: 'primary.light'
               }}
             >
-              <img
-                src="/app-demo.gif"
-                alt="VisualCraft Studio workflow demonstration: Enter website URL, discover images, enhance with AI, create custom products, and order professional prints"
+              <video
+                src="/visualcraftstudioai-demo.mp4"
                 style={{
                   width: '100%',
                   height: '100%',
                   objectFit: 'contain',
                   borderRadius: '8px'
                 }}
+                controls
+                autoPlay
+                muted
+                loop
               />
             </Box>
 
