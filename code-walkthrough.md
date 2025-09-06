@@ -164,57 +164,411 @@ const responsive = {
 };
 ```
 
-## 🖥️ Backend Crawling Engine (`server/server.js`)
+## 🖥️ Backend Architecture (`server/`)
+
+### Express Application Structure (`server/app.js`)
+
+**Application Bootstrap Pattern:**
+```javascript
+class App {
+  constructor() {
+    this.app = express();
+    this.setupMiddleware();
+    this.setupRoutes();
+    this.setupErrorHandling();
+  }
+
+  setupMiddleware() {
+    this.app.use(cors(corsOptions));
+    this.app.use(express.json({ limit: '10mb' }));
+    this.app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+    this.app.use(logger.requestMiddleware());
+  }
+
+  setupRoutes() {
+    this.app.use('/api', crawlRoutes);
+    this.app.use('/api/ai', aiRoutes);
+    this.app.use('/', healthRoutes);
+  }
+}
+```
+
+**Server Initialization (`server/server.js`):**
+```javascript
+const app = require('./app');
+const logger = require('./utils/logger');
+
+const PORT = process.env.PORT || 3001;
+
+app.listen(PORT, '0.0.0.0', () => {
+  logger.info(`🚀 CollageForge Backend running on port ${PORT}`);
+  logger.info(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+  logger.info(`🌐 CORS Origin: ${process.env.CORS_ORIGIN || 'localhost'}`);
+});
+```
+
+### Controller Layer Pattern
+
+**Crawl Controller (`server/controllers/crawlController.js`):**
+```javascript
+class CrawlController {
+  constructor() {
+    this.crawler = new ImageCrawler();
+  }
+
+  async crawlImages(req, res) {
+    const { url } = req.body;
+    const requestId = req.requestId;
+
+    if (!url) {
+      logger.warn('Crawl request missing URL', {
+        component: 'API',
+        action: 'validation_error',
+        requestId
+      });
+      return res.status(400).json({ error: 'URL is required' });
+    }
+
+    logger.info(`Starting crawl for: ${url}`, {
+      component: 'API',
+      action: 'crawl_request',
+      requestId,
+      targetUrl: url
+    });
+
+    const result = await this.crawler.crawl(url, requestId);
+    res.json(result);
+  }
+}
+```
+
+**AI Controller (`server/controllers/aiController.js`):**
+```javascript
+class AIController {
+  constructor() {
+    this.aiImageService = new AIImageService();
+  }
+
+  async blendImages(req, res) {
+    const { baseImageUrl, text, prompt, style } = req.body;
+    const userImageBuffer = req.file ? req.file.buffer : null;
+
+    const result = await this.aiImageService.blendImages(
+      baseImageUrl,
+      userImageBuffer,
+      text,
+      prompt,
+      style,
+      req.requestId
+    );
+
+    res.json(result);
+  }
+}
+```
+
+### Service Layer Implementation
+
+**Image Crawler Service (`server/services/ImageCrawler.js`):**
+```javascript
+class ImageCrawler {
+  constructor() {
+    this.startTime = 0;
+    this.foundImages = new Set();
+    this.visitedUrls = new Set();
+  }
+
+  async crawl(startUrl, requestId = 'unknown') {
+    this.startTime = Date.now();
+    this.foundImages.clear();
+    this.visitedUrls.clear();
+
+    logger.logCrawlStart(startUrl, requestId);
+
+    try {
+      const normalizedUrl = this.normalizeUrl(startUrl);
+      const images = [];
+
+      // Check robots.txt compliance
+      const robotsAllowed = await this.checkRobotsTxt(normalizedUrl);
+      if (!robotsAllowed) {
+        return { images: [], error: 'Crawling not allowed by robots.txt' };
+      }
+
+      // Recursive crawling with depth limit
+      await this.crawlUrl(normalizedUrl, images, 0, requestId);
+
+      const duration = Date.now() - this.startTime;
+      logger.logCrawlComplete(startUrl, images.length, duration, requestId);
+
+      return { images };
+    } catch (error) {
+      logger.logCrawlError(startUrl, error, requestId);
+      return { images: [], error: error.message || 'Unknown error occurred' };
+    }
+  }
+}
+```
+
+**AI Image Service (`server/services/AIImageService.js`):**
+```javascript
+class AIImageService {
+  constructor() {
+    const genAI = process.env.GOOGLE_AI_API_KEY ? 
+      new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY) : null;
+    this.model = genAI ? genAI.getGenerativeModel({ model: "gemini-pro-vision" }) : null;
+  }
+
+  async blendImages(baseImageUrl, userImageBuffer, text, prompt, style = 'realistic', requestId) {
+    const startTime = Date.now();
+    logger.logAIProcessStart(baseImageUrl, requestId);
+
+    try {
+      if (!this.model) {
+        return {
+          success: false,
+          error: 'Google AI API key not configured. Please add GOOGLE_AI_API_KEY to your environment variables.'
+        };
+      }
+
+      // Download and process base image
+      const baseImageResponse = await axios.get(baseImageUrl, {
+        responseType: 'arraybuffer',
+        timeout: 10000,
+        headers: { 'User-Agent': USER_AGENT }
+      });
+
+      const baseImageBuffer = Buffer.from(baseImageResponse.data);
+
+      // Process with Sharp for optimization
+      let processedBaseImage = await sharp(baseImageBuffer)
+        .resize(1024, 1024, { fit: 'inside', withoutEnlargement: true })
+        .jpeg({ quality: 90 })
+        .toBuffer();
+
+      // Note: This is a demo implementation
+      // Production would use Google's Imagen API for actual generation
+      const duration = Date.now() - startTime;
+      logger.logAIProcessComplete(true, duration, requestId);
+
+      return {
+        success: true,
+        imageUrl: baseImageUrl,
+        message: 'Demo: Returning base image as AI-blended result. Actual AI generation requires Google Imagen API.'
+      };
+
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      logger.logAIProcessComplete(false, duration, requestId);
+      return { success: false, error: error.message || 'Failed to blend images' };
+    }
+  }
+}
+```
+
+### Error Handling Architecture (`server/middleware/errorHandler.js`)
+
+**Process-Level Error Management:**
+```javascript
+class ErrorHandler {
+  static setupProcessHandlers() {
+    // Production error handling
+    process.on('uncaughtException', (error) => {
+      logger.error('Uncaught Exception:', error);
+      process.exit(1);
+    });
+
+    process.on('unhandledRejection', (reason, promise) => {
+      logger.error('Unhandled Rejection at:', { promise, reason });
+      process.exit(1);
+    });
+
+    // Graceful shutdown
+    process.on('SIGTERM', () => {
+      logger.info('SIGTERM received, shutting down gracefully');
+      process.exit(0);
+    });
+  }
+}
+```
 
 ### Crawling Algorithm Implementation
 
 **Phase 1: Initialization & Validation**
 ```javascript
-class ImageCrawler {
-  async crawlImages(startUrl) {
-    this.visitedUrls = new Set();
-    this.foundImages = new Set();
-    this.startTime = Date.now();
-    
-    const url = new URL(startUrl);
-    this.domain = url.hostname;
-    
-    await this.checkRobotsTxt(url);
+async crawl(startUrl, requestId) {
+  this.startTime = Date.now();
+  this.foundImages.clear();
+  this.visitedUrls.clear();
+
+  const normalizedUrl = this.normalizeUrl(startUrl);
+  const images = [];
+
+  // Robots.txt compliance check
+  const robotsAllowed = await this.checkRobotsTxt(normalizedUrl);
+  if (!robotsAllowed) {
+    return { images: [], error: 'Crawling not allowed by robots.txt' };
   }
+
+  await this.crawlUrl(normalizedUrl, images, 0, requestId);
+  return { images };
 }
 ```
 
 **Phase 2: Recursive Page Processing**
 ```javascript
-async crawlPage(url, depth = 0) {
-  if (this.shouldStop() || depth > 1) return;
-  
-  const response = await axios.get(url, { timeout: 10000 });
-  const $ = cheerio.load(response.data);
-  
-  await this.extractImages($, url);
-  
-  if (depth === 0) {
-    await this.followLinks($, url, depth + 1);
+async crawlUrl(url, images, depth, requestId) {
+  if (this.shouldStop() || this.visitedUrls.has(url) || depth > 1) {
+    return;
+  }
+
+  this.visitedUrls.add(url);
+  logger.debug(`Crawling URL: ${url} (depth: ${depth})`, {
+    component: 'Crawler',
+    action: 'crawl_url',
+    requestId,
+    url,
+    depth
+  });
+
+  try {
+    const response = await axios.get(url, {
+      timeout: 10000,
+      headers: { 'User-Agent': USER_AGENT },
+      maxRedirects: 5,
+    });
+
+    const $ = cheerio.load(response.data);
+
+    // Extract images from current page
+    this.extractImages($, url, images);
+
+    // If at depth 0, crawl one level deeper
+    if (depth === 0) {
+      const links = this.extractLinks($, url);
+
+      for (const link of links.slice(0, 10)) { // Limit to 10 links
+        if (this.shouldStop()) break;
+
+        const robotsAllowed = await this.checkRobotsTxt(link);
+        if (robotsAllowed) {
+          await this.crawlUrl(link, images, depth + 1, requestId);
+        }
+      }
+    }
+  } catch (error) {
+    logger.warn(`Failed to crawl ${url}`, {
+      component: 'Crawler',
+      action: 'crawl_url_error',
+      requestId,
+      url,
+      error: error.message
+    });
   }
 }
 ```
 
 **Phase 3: Image Extraction & Filtering**
 ```javascript
-async extractImages($, pageUrl) {
-  $('img').each((index, element) => {
+extractImages($, sourceUrl, images) {
+  $('img').each((_, element) => {
+    if (this.shouldStop()) return false;
+
     const src = $(element).attr('src');
-    const imageUrl = new URL(src, pageUrl).href;
-    
-    if (this.shouldSkipImage(imageUrl, element)) return;
-    
-    this.foundImages.add({
-      url: imageUrl,
-      sourceUrl: pageUrl,
-      alt: $(element).attr('alt') || ''
-    });
+    if (!src) return;
+
+    const absoluteUrl = this.resolveUrl(src, sourceUrl);
+    if (absoluteUrl && !this.foundImages.has(absoluteUrl)) {
+      // Filter out very small images and common non-content images
+      const width = $(element).attr('width');
+      const height = $(element).attr('height');
+      const alt = $(element).attr('alt') || '';
+
+      // Skip tiny images, tracking pixels, and common UI elements
+      if (width && height && (parseInt(width) < 50 || parseInt(height) < 50)) {
+        return;
+      }
+
+      if (alt.toLowerCase().includes('pixel') ||
+        absoluteUrl.includes('tracking') ||
+        absoluteUrl.includes('analytics') ||
+        absoluteUrl.includes('beacon')) {
+        return;
+      }
+
+      this.foundImages.add(absoluteUrl);
+
+      images.push({
+        url: absoluteUrl,
+        sourceUrl,
+        alt: alt
+      });
+
+      logger.debug(`Found image: ${absoluteUrl}`, {
+        component: 'Crawler',
+        action: 'image_found',
+        imageUrl: absoluteUrl,
+        sourceUrl,
+        alt
+      });
+    }
   });
+}
+```
+
+**Phase 4: Link Extraction & Same-Domain Filtering**
+```javascript
+extractLinks($, baseUrl) {
+  const links = [];
+  const baseDomain = new URL(baseUrl).hostname;
+
+  $('a[href]').each((_, element) => {
+    const href = $(element).attr('href');
+    const rel = $(element).attr('rel');
+
+    // Respect nofollow
+    if (rel && rel.includes('nofollow')) {
+      return;
+    }
+
+    if (href) {
+      const absoluteUrl = this.resolveUrl(href, baseUrl);
+      if (absoluteUrl) {
+        try {
+          const linkDomain = new URL(absoluteUrl).hostname;
+          // Only follow links within the same domain
+          if (linkDomain === baseDomain && !this.visitedUrls.has(absoluteUrl)) {
+            links.push(absoluteUrl);
+          }
+        } catch (e) {
+          // Invalid URL, skip
+        }
+      }
+    }
+  });
+
+  return links;
+}
+```
+
+**Robots.txt Compliance Check:**
+```javascript
+async checkRobotsTxt(url) {
+  try {
+    const robotsUrl = new URL('/robots.txt', url).toString();
+    const response = await axios.get(robotsUrl, {
+      timeout: 5000,
+      headers: { 'User-Agent': USER_AGENT }
+    });
+
+    const robots = robotsParser(robotsUrl, response.data);
+    const urlPath = new URL(url).pathname;
+
+    return robots.isAllowed(USER_AGENT, urlPath) !== false;
+  } catch (error) {
+    // If robots.txt doesn't exist or can't be fetched, assume crawling is allowed
+    return true;
+  }
 }
 ```
 
@@ -222,9 +576,8 @@ async extractImages($, pageUrl) {
 ```javascript
 shouldStop() {
   return (
-    this.foundImages.size >= 50 ||                    // Image limit
-    Date.now() - this.startTime > 180000 ||          // Time limit
-    this.visitedUrls.size > 20                       // Page limit
+    this.foundImages.size >= MAX_IMAGES ||           // 50 image limit
+    Date.now() - this.startTime >= MAX_TIME_MS      // 180 second timeout
   );
 }
 ```

@@ -599,7 +599,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
                   }}
                   onClick={() => handleImageClick(image)}
                 >
-                  <Box position="relative" height="100%">
+                  <Box position="relative" height="100%" sx={{ p: '2px' }}>
                     <CardMedia
                       component="img"
                       height="100%"
@@ -610,6 +610,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
                         objectFit: 'cover',
                         opacity: selectionMode && !selectedImages.has(image.url) ? 0.6 : 1,
                         transition: 'opacity 0.2s',
+                        p: '2px'
                       }}
                     />
 
@@ -627,6 +628,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
                           borderRadius: '50%',
                           '&:hover': {
                             backgroundColor: 'rgba(255, 255, 255, 1)',
+                            p: '2px'
                           },
                         }}
                         icon={<CheckCircleIcon />}
