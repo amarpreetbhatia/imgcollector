@@ -126,7 +126,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
           <img
             src="/logo.svg"
-            alt="CollageForge Logo"
+            alt="VisualCraft Studio Logo - AI-Powered Custom Print Studio"
             style={{
               height: isMobile ? '50px' : '60px',
               width: 'auto'
@@ -135,35 +135,56 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         </Box>
 
         <Typography
+          variant={isMobile ? "h6" : "h5"}
+          component="h1"
+          sx={{ 
+            fontWeight: 800, 
+            mb: 2,
+            background: 'linear-gradient(135deg, #3B82F6 0%, #10B981 50%, #8B5CF6 100%)',
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            textAlign: 'center',
+            letterSpacing: '-0.025em'
+          }}
+        >
+          VisualCraft Studio
+        </Typography>
+
+        <Typography
           variant={isMobile ? "body1" : "h6"}
           color="text.secondary"
           paragraph
           sx={{ fontWeight: 500 }}
         >
-          Create stunning photo collages and order custom prints
+          Transform any website into custom art with AI enhancement
         </Typography>
 
         <Typography
           variant="body2"
           color="text.secondary"
           paragraph
-          sx={{ mb: 3, fontStyle: 'italic' }}
+          sx={{ mb: 3, fontStyle: 'italic', fontWeight: 'medium' }}
         >
-          Discover • Create • Print
+          Discover • Blend • Print • Perfect
         </Typography>
 
         <Box sx={{ mt: 4, mb: 3 }}>
           <TextField
             fullWidth
-            label="Enter Website URL to Source Images"
+            label="Enter Website URL to Discover Images"
             placeholder="example.com or https://example.com"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            onKeyPress={handleKeyPress}
+            onKeyDown={(e) => e.key === 'Enter' && !isLoading && handleCrawl()}
             disabled={isLoading}
             error={!!error}
-            helperText={error || 'We\'ll discover up to 50 images to create your collage'}
+            helperText={error || 'We\'ll discover up to 50 images for AI enhancement and custom printing'}
             sx={{ mb: 3 }}
+            inputProps={{
+              'aria-describedby': 'url-helper-text',
+              'aria-label': 'Website URL input for image discovery'
+            }}
           />
 
           {isLoading && (
@@ -205,17 +226,22 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             startIcon={<PlayIcon />}
             onClick={() => setDemoModalOpen(true)}
             sx={{
-              borderRadius: 2,
+              borderRadius: 3,
               textTransform: 'none',
               fontSize: '1rem',
-              fontWeight: 'bold',
+              fontWeight: 600,
               py: 1.5,
               px: 3,
+              borderWidth: '2px',
               borderColor: 'primary.main',
               color: 'primary.main',
+              background: 'rgba(59, 130, 246, 0.05)',
               '&:hover': {
-                backgroundColor: 'primary.main',
+                background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
                 color: 'white',
+                borderColor: 'primary.main',
+                transform: 'translateY(-2px)',
+                boxShadow: '0 10px 15px -3px rgb(59 130 246 / 0.3)',
               }
             }}
           >
@@ -236,43 +262,62 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
       {!isLoading && (
         <Box sx={{ mt: 4, width: '100%', maxWidth: 1000 }}>
           <Paper elevation={1} sx={{ p: 3, borderRadius: 2, mb: 4 }}>
-            <Typography variant="h5" sx={{ fontWeight: 'bold', textAlign: 'center', mb: 3 }}>
-              🚀 Why Choose CollageForge?
+            <Typography 
+              variant="h5" 
+              component="h2"
+              sx={{ fontWeight: 'bold', textAlign: 'center', mb: 3 }}
+            >
+              🚀 Why Choose VisualCraft Studio?
             </Typography>
 
             <Grid container spacing={3}>
               <Grid item xs={12} md={4}>
-                <Box sx={{ textAlign: 'center', p: 2 }}>
-                  <Typography variant="h2" sx={{ mb: 1 }}>🔍</Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
+                <Box sx={{ textAlign: 'center', p: 2 }} role="region" aria-labelledby="feature-discovery">
+                  <Typography variant="h2" sx={{ mb: 1 }} aria-hidden="true">🔍</Typography>
+                  <Typography 
+                    id="feature-discovery"
+                    variant="h6" 
+                    component="h3"
+                    sx={{ fontWeight: 'bold', mb: 1 }}
+                  >
                     Smart Discovery
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Find up to 50 high-quality images from any website with our intelligent crawler
+                    Find up to 50 high-quality images from any website with our intelligent AI-powered crawler
                   </Typography>
                 </Box>
               </Grid>
 
               <Grid item xs={12} md={4}>
-                <Box sx={{ textAlign: 'center', p: 2 }}>
-                  <Typography variant="h2" sx={{ mb: 1 }}>🎨</Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
-                    Auto Layouts
+                <Box sx={{ textAlign: 'center', p: 2 }} role="region" aria-labelledby="feature-enhancement">
+                  <Typography variant="h2" sx={{ mb: 1 }} aria-hidden="true">✨</Typography>
+                  <Typography 
+                    id="feature-enhancement"
+                    variant="h6" 
+                    component="h3"
+                    sx={{ fontWeight: 'bold', mb: 1 }}
+                  >
+                    AI Enhancement
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Create stunning collages with smart auto-layouts optimized for printing
+                    Blend images with AI, add custom text, and create stunning visual compositions
                   </Typography>
                 </Box>
               </Grid>
 
               <Grid item xs={12} md={4}>
-                <Box sx={{ textAlign: 'center', p: 2 }}>
-                  <Typography variant="h2" sx={{ mb: 1 }}>🛍️</Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
-                    9 Products
+                <Box sx={{ textAlign: 'center', p: 2 }} role="region" aria-labelledby="feature-products">
+                  <Typography variant="h2" sx={{ mb: 1 }} aria-hidden="true">🛍️</Typography>
+                  <Typography 
+                    id="feature-products"
+                    variant="h6" 
+                    component="h3"
+                    sx={{ fontWeight: 'bold', mb: 1 }}
+                  >
+                    Premium Products
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Transform into posters, t-shirts, mugs, phone cases, and more premium products
+                    Professional printing on posters, t-shirts, mugs, phone cases, and more premium merchandise
                   </Typography>
                 </Box>
               </Grid>
@@ -304,10 +349,14 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         }}
       >
         <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-            ✨ How CollageForge Works
+          <Typography variant="h6" component="h2" sx={{ fontWeight: 'bold' }}>
+            ✨ How VisualCraft Studio Works
           </Typography>
-          <IconButton onClick={() => setDemoModalOpen(false)} size="small">
+          <IconButton 
+            onClick={() => setDemoModalOpen(false)} 
+            size="small"
+            aria-label="Close demo modal"
+          >
             <CloseIcon />
           </IconButton>
         </DialogTitle>
@@ -340,7 +389,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             >
               <img
                 src="/app-demo.gif"
-                alt="CollageForge Workflow - From Discovery to Delivery"
+                alt="VisualCraft Studio workflow demonstration: Enter website URL, discover images, enhance with AI, create custom products, and order professional prints"
                 style={{
                   width: '100%',
                   height: '100%',

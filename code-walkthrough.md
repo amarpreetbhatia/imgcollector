@@ -582,6 +582,117 @@ shouldStop() {
 }
 ```
 
+## 🤖 AI Image Blending System
+
+### AI Service Integration (`server/services/AIImageService.js`)
+
+**Google AI Integration Pattern:**
+```javascript
+class AIImageService {
+  constructor() {
+    logger.info(`🔑 Google AI API Key: ${process.env.GOOGLE_AI_API_KEY ? 'Loaded' : 'Missing'}`);
+    const genAI = process.env.GOOGLE_AI_API_KEY ? 
+      new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY) : null;
+    this.model = genAI ? genAI.getGenerativeModel({ model: "gemini-pro-vision" }) : null;
+  }
+
+  async blendImages(baseImageUrl, userImageBuffer, text, prompt, style = 'realistic', requestId) {
+    // Service availability check
+    if (!this.model) {
+      return {
+        success: false,
+        error: 'Google AI API key not configured. Please add GOOGLE_AI_API_KEY to your environment variables.'
+      };
+    }
+
+    // Image processing pipeline
+    const baseImageResponse = await axios.get(baseImageUrl, {
+      responseType: 'arraybuffer',
+      timeout: 10000,
+      headers: { 'User-Agent': USER_AGENT }
+    });
+
+    // Sharp image optimization
+    let processedBaseImage = await sharp(baseImageBuffer)
+      .resize(1024, 1024, { fit: 'inside', withoutEnlargement: true })
+      .jpeg({ quality: 90 })
+      .toBuffer();
+
+    // AI prompt construction
+    let aiPrompt = this.buildBlendPrompt(text, prompt, style);
+
+    // Note: Current implementation is demo mode
+    // Production requires Google Imagen API for actual generation
+    return {
+      success: true,
+      imageUrl: baseImageUrl,
+      message: 'Demo: Returning base image as AI-blended result. Actual AI generation requires Google Imagen API.'
+    };
+  }
+
+  buildBlendPrompt(text, prompt, style) {
+    let aiPrompt = `Create a ${style} style image that blends the provided images`;
+
+    if (text) {
+      aiPrompt += ` and includes the text "${text}"`;
+    }
+
+    if (prompt) {
+      aiPrompt += `. Additional instructions: ${prompt}`;
+    }
+
+    aiPrompt += '. Make it visually appealing and cohesive.';
+    return aiPrompt;
+  }
+}
+```
+
+### Frontend AI Integration (`src/components/ImageCarousel.tsx`)
+
+**AI Blending UI Pattern:**
+```typescript
+// AI Image Blending state management
+const [showAIBlender, setShowAIBlender] = useState(false);
+const [selectedImageForAI, setSelectedImageForAI] = useState<ImageData | null>(null);
+
+// AI Blend button handler
+const handleAIBlendClick = (image: ImageData) => {
+  logger.userAction('AI Blend clicked', 'ImageCarousel', { imageUrl: image.url });
+  setSelectedImageForAI(image);
+  setShowAIBlender(true);
+};
+
+// AI result handler
+const handleAIImageGenerated = (result: BlendImageResult) => {
+  if (result.success) {
+    logger.info('AI Image generated successfully', 'ImageCarousel', 'aiImageGenerated', result);
+  }
+};
+
+// AI Blend Button Component
+<Tooltip title="AI Blend this image">
+  <IconButton
+    size="small"
+    sx={{
+      position: 'absolute',
+      bottom: 8,
+      right: 8,
+      background: 'linear-gradient(45deg, #FF6B6B 30%, #4ECDC4 90%)',
+      color: 'white',
+      '&:hover': {
+        background: 'linear-gradient(45deg, #FF5252 30%, #26C6DA 90%)',
+      },
+    }}
+    onClick={(e) => {
+      e.stopPropagation();
+      handleAIBlendClick(image);
+    }}
+  >
+    <MagicIcon fontSize="small" />
+  </IconButton>
+</Tooltip>
+```
+
 ## 🎨 Canvas-Based Collage System (`src/utils/collageService.ts`)
 
 ### Collage Generation Pipeline
@@ -842,6 +953,66 @@ export class ServiceInitializer {
 }
 ```
 
+## 📊 Logging & Monitoring System
+
+### Structured Logging Pattern (`server/utils/logger.js`)
+
+**Request Lifecycle Logging:**
+```javascript
+// Crawl operation logging
+logger.logCrawlStart(startUrl, requestId);
+logger.logCrawlProgress(url, imageCount, requestId);
+logger.logCrawlComplete(startUrl, images.length, duration, requestId);
+logger.logCrawlError(startUrl, error, requestId);
+
+// AI processing logging
+logger.logAIProcessStart(baseImageUrl, requestId);
+logger.logAIProcessComplete(success, duration, requestId);
+
+// Component-based logging with context
+logger.info('Starting crawl for: ${url}', {
+  component: 'API',
+  action: 'crawl_request',
+  requestId,
+  targetUrl: url
+});
+
+logger.warn('Crawl request missing URL', {
+  component: 'API',
+  action: 'validation_error',
+  requestId
+});
+
+logger.error('AI Image Blending Error', error, {
+  component: 'AI',
+  action: 'blend_error',
+  requestId,
+  baseImageUrl
+});
+```
+
+**Request Middleware Integration:**
+```javascript
+// Automatic request ID generation and logging
+this.app.use(logger.requestMiddleware());
+
+// Usage in controllers
+const requestId = req.requestId; // Auto-generated UUID
+logger.info(`Processing request: ${requestId}`);
+```
+
+**Frontend Logging Integration:**
+```typescript
+// User action tracking
+logger.userAction('AI Blend clicked', 'ImageCarousel', { imageUrl: image.url });
+
+// Process completion logging
+logger.info('AI Image generated successfully', 'ImageCarousel', 'aiImageGenerated', result);
+
+// Error logging with context
+logger.error('Download failed', 'ImageCarousel', 'download', error);
+```
+
 ## 📊 Type System & Data Contracts (`src/types.ts` + `src/contracts/api.ts`)
 
 ### Core Data Interfaces
@@ -875,6 +1046,31 @@ export interface CrawlResponse {
 }
 ```
 
+### Configuration Constants (`server/config/constants.js`)
+
+**System Limits & Timeouts:**
+```javascript
+const MAX_IMAGES = 50;           // Maximum images per crawl session
+const MAX_TIME_MS = 180000;      // 3 minute timeout for crawling
+const USER_AGENT = 'ImageCrawlerBot/1.0 (+https://collageforge.com)';
+
+// Download security limits
+const MAX_FILE_SIZE = 50 * 1024 * 1024;    // 50MB per file
+const MAX_TOTAL_SIZE = 500 * 1024 * 1024;  // 500MB total
+const MAX_CONCURRENT_DOWNLOADS = 3;         // Concurrent download limit
+```
+
+**CORS Configuration (`server/config/cors.js`):**
+```javascript
+const corsOptions = {
+  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  credentials: true,
+  optionsSuccessStatus: 200,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+};
+```
+
 ### State Management Patterns
 ```typescript
 // Component state pattern
@@ -892,9 +1088,72 @@ const [downloadState, setDownloadState] = useState<{
   progress: null,
   error: null
 });
+
+// AI Blending state
+const [showAIBlender, setShowAIBlender] = useState(false);
+const [selectedImageForAI, setSelectedImageForAI] = useState<ImageData | null>(null);
+
+// Collage creation state
+const [selectionMode, setSelectionMode] = useState(false);
+const [selectedImages, setSelectedImages] = useState<Set<string>>(new Set());
+const [isGeneratingCollage, setIsGeneratingCollage] = useState(false);
 ```
 
 ## 🔄 Communication Patterns
+
+### API Route Structure (`server/routes/`)
+
+**Crawl Routes (`server/routes/crawlRoutes.js`):**
+```javascript
+// POST /api/crawl - Main image discovery endpoint
+router.post('/crawl', crawlController.crawlImages);
+
+// Request format:
+{
+  "url": "https://example.com"
+}
+
+// Response format:
+{
+  "images": [
+    {
+      "url": "https://example.com/image1.jpg",
+      "sourceUrl": "https://example.com",
+      "alt": "Image description"
+    }
+  ]
+}
+```
+
+**AI Routes (`server/routes/aiRoutes.js`):**
+```javascript
+// POST /api/ai/blend - AI image blending endpoint
+router.post('/blend', upload.single('userImage'), aiController.blendImages);
+
+// POST /api/ai/generate - AI image generation endpoint
+router.post('/generate', aiController.generateImage);
+
+// Request format for blend:
+{
+  "baseImageUrl": "https://example.com/image.jpg",
+  "text": "Custom text overlay",
+  "prompt": "Additional AI instructions",
+  "style": "realistic"
+}
+// + optional userImage file upload
+```
+
+**Health Routes (`server/routes/healthRoutes.js`):**
+```javascript
+// GET / - Basic health check
+router.get('/', (req, res) => {
+  res.json({ 
+    status: 'healthy', 
+    service: 'CollageForge Backend',
+    timestamp: new Date().toISOString()
+  });
+});
+```
 
 ### Frontend ↔ Backend API Communication
 ```typescript
@@ -914,6 +1173,28 @@ class ImageCrawler {
     } catch (error) {
       return { images: [], error: error.message };
     }
+  }
+}
+
+// AI Blending API client
+class AIImageBlender {
+  async blendImages(baseImageUrl: string, options: BlendOptions): Promise<BlendResult> {
+    const formData = new FormData();
+    formData.append('baseImageUrl', baseImageUrl);
+    formData.append('text', options.text || '');
+    formData.append('prompt', options.prompt || '');
+    formData.append('style', options.style || 'realistic');
+    
+    if (options.userImage) {
+      formData.append('userImage', options.userImage);
+    }
+
+    const response = await fetch('http://localhost:3001/api/ai/blend', {
+      method: 'POST',
+      body: formData
+    });
+
+    return response.json();
   }
 }
 ```

@@ -1,6 +1,19 @@
 {
-    "name": "collageforge",
+    "name": "visualcraft-studio",
     "version": "1.0.0",
+    "description": "AI-powered platform for creating custom prints from web content. Transform any website into personalized art with intelligent image discovery, AI enhancement, and professional printing.",
+    "keywords": [
+        "AI image enhancement",
+        "custom printing",
+        "web image discovery",
+        "personalized art",
+        "photo collage",
+        "print on demand",
+        "visual content creator",
+        "custom merchandise"
+    ],
+    "author": "VisualCraft Studio",
+    "homepage": "https://visualcraft-studio.com",
     "private": true,
     "dependencies": {
         "@emotion/react": "^11.11.1",

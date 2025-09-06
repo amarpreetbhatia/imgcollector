@@ -1,7 +1,7 @@
 {
-  "short_name": "CollageForge",
-  "name": "CollageForge - Create & Print Custom Photo Collages",
-  "description": "Transform website images into beautiful collages and order custom prints. Discover, design, and print beautiful posters in minutes.",
+  "short_name": "VisualCraft",
+  "name": "VisualCraft Studio - AI-Powered Custom Print Studio",
+  "description": "Transform any website into custom art. AI-powered image discovery, enhancement, and professional printing. Create personalized posters, mugs, and t-shirts from web content.",
   "icons": [
     {
       "src": "favicon.svg",
@@ -17,9 +17,9 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#667eea",
+  "theme_color": "#3B82F6",
   "background_color": "#1a1a1a",
-  "categories": ["photo", "productivity", "lifestyle"],
+  "categories": ["photo", "productivity", "lifestyle", "design", "business"],
   "screenshots": [
     {
       "src": "logo-full.svg",
@@ -27,5 +27,8 @@
       "type": "image/svg+xml",
       "form_factor": "wide"
     }
-  ]
+  ],
+  "lang": "en",
+  "dir": "ltr",
+  "orientation": "any"
 }

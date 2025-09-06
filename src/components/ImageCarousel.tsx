@@ -267,8 +267,10 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
         sx={{
           p: { xs: 2, md: 3 },
           mb: 3,
-          borderRadius: 2,
-          background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%)'
+          borderRadius: 4,
+          background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(16, 185, 129, 0.08) 100%)',
+          border: '1px solid rgba(59, 130, 246, 0.2)',
+          backdropFilter: 'blur(10px)',
         }}
       >
         {/* Logo and Title Section */}
@@ -276,7 +278,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
             <img
               src="/logo-compact.svg"
-              alt="CollageForge"
+              alt="VisualCraft Studio - AI-Powered Custom Print Studio"
               style={{
                 height: isMobile ? '30px' : '35px',
                 width: 'auto'
@@ -292,14 +294,14 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
                   mb: 0.5
                 }}
               >
-                Create Your Collage
+                Enhance & Create
               </Typography>
               <Typography
                 variant="body2"
                 color="text.secondary"
                 sx={{ fontSize: isMobile ? '0.75rem' : '0.875rem' }}
               >
-                Select up to 5 images to create a custom poster
+                Select images for AI enhancement and custom printing
               </Typography>
             </Box>
           </Box>
@@ -357,7 +359,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, onBack }) => {
                 }}
                 aria-label="Start creating a collage by selecting images"
               >
-                🎨 Create Collage
+                🎨 Create Art
               </Button>
             ) : (
               <Stack direction="row" spacing={1}>

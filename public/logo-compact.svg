@@ -1,35 +1,47 @@
-<svg width="120" height="40" viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg">
+<svg width="150" height="40" viewBox="0 0 150 40" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="compactGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    <linearGradient id="modernCompactGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3B82F6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1D4ED8;stop-opacity:1" />
     </linearGradient>
-    <linearGradient id="compactAccent" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#f093fb;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#f5576c;stop-opacity:1" />
+    <linearGradient id="modernCompactAccent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10B981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="modernCompactText" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8B5CF6;stop-opacity:1" />
+      <stop offset="40%" style="stop-color:#3B82F6;stop-opacity:1" />
+      <stop offset="80%" style="stop-color:#10B981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#34D399;stop-opacity:1" />
     </linearGradient>
   </defs>
   
-  <!-- Icon -->
-  <g transform="translate(5, 8)">
-    <!-- Collage grid -->
-    <rect x="0" y="0" width="10" height="10" rx="1.5" fill="url(#compactGradient)" opacity="0.9"/>
-    <rect x="12" y="0" width="10" height="10" rx="1.5" fill="url(#compactGradient)" opacity="0.7"/>
-    <rect x="0" y="12" width="10" height="12" rx="1.5" fill="url(#compactGradient)" opacity="0.8"/>
-    <rect x="12" y="12" width="10" height="12" rx="1.5" fill="url(#compactGradient)" opacity="0.9"/>
+  <!-- Modern Icon: Discovery + AI + Print -->
+  <g transform="translate(6, 10)">
+    <!-- Modern discovery lens -->
+    <circle cx="6" cy="6" r="4" fill="none" stroke="url(#modernCompactGradient)" stroke-width="2" opacity="0.95"/>
+    <circle cx="6" cy="6" r="2" fill="none" stroke="url(#modernCompactAccent)" stroke-width="1.5" opacity="0.9"/>
     
-    <!-- Creative spark -->
-    <g transform="translate(24, 2)">
-      <line x1="0" y1="0" x2="6" y2="6" stroke="url(#compactAccent)" stroke-width="2" stroke-linecap="round"/>
-      <circle cx="0" cy="0" r="1.5" fill="url(#compactAccent)"/>
-    </g>
+    <!-- Dynamic AI brush stroke -->
+    <path d="M 12 3 Q 17 5 22 1 Q 23 0 22 -1 Q 21 0 16 2 Z" fill="url(#modernCompactAccent)" opacity="0.95"/>
+    
+    <!-- Modern print frame -->
+    <rect x="14" y="12" width="9" height="6" rx="1.5" fill="none" stroke="url(#modernCompactGradient)" stroke-width="2" opacity="0.95"/>
+    <rect x="15.5" y="13.5" width="6" height="3" rx="1" fill="url(#modernCompactText)" opacity="0.8"/>
+    
+    <!-- Modern AI sparkles -->
+    <circle cx="2" cy="18" r="1" fill="url(#modernCompactAccent)" opacity="0.9"/>
+    <circle cx="26" cy="2" r="0.8" fill="#8B5CF6" opacity="0.9"/>
   </g>
   
-  <!-- Text -->
-  <text x="40" y="18" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="url(#compactGradient)">
-    Collage<tspan fill="url(#compactAccent)">Forge</tspan>
+  <!-- Modern text -->
+  <text x="38" y="16" font-family="Inter, SF Pro Display, Arial, sans-serif" font-size="12" font-weight="800" fill="url(#modernCompactGradient)" letter-spacing="-0.025em">
+    Visual<tspan fill="url(#modernCompactText)">Craft</tspan>
   </text>
-  <text x="40" y="30" font-family="Arial, sans-serif" font-size="7" fill="#666666">
-    Discover • Create • Print
+  <text x="38" y="26" font-family="Inter, Arial, sans-serif" font-size="9" font-weight="600" fill="url(#modernCompactAccent)">
+    Studio
+  </text>
+  <text x="38" y="34" font-family="Inter, Arial, sans-serif" font-size="7" fill="#64748B" font-weight="500">
+    Discover • Blend • Print • Perfect
   </text>
 </svg>
